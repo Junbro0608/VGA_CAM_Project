@@ -1,0 +1,9 @@
+0.7
+2020.2
+Nov 18 2020
+09:47:47
+d:/workplace/Video Processing_teamproject/LAB01_QQVGA_BlackBar_test/LAB01_QQVGA_BlackBar_test.srcs/sources_1/new/ImgRom.sv,1783580720,systemVerilog,,,,ImgROM,,,,,,,,
+d:/workplace/Video Processing_teamproject/LAB01_QQVGA_BlackBar_test/LAB01_QQVGA_BlackBar_test.srcs/sources_1/new/ImgRomReader.sv,1783581008,systemVerilog,,,,ImgRomReader,,,,,,,,
+d:/workplace/Video Processing_teamproject/LAB01_QQVGA_BlackBar_test/LAB01_QQVGA_BlackBar_test.srcs/sources_1/new/Img_externalBar.sv,1783582828,systemVerilog,,,,Img_externalBar,,,,,,,,
+d:/workplace/Video Processing_teamproject/LAB01_QQVGA_BlackBar_test/LAB01_QQVGA_BlackBar_test.srcs/sources_1/new/VGA_decoder.sv,1783577404,systemVerilog,,,,VGA_Decoder;pclk_gen;pixel_counter;vga_decoder,,,,,,,,
+d:/workplace/Video Processing_teamproject/LAB01_QQVGA_BlackBar_test/LAB01_QQVGA_BlackBar_test.srcs/sources_1/new/VGA_top.sv,1783582437,systemVerilog,,,,VGA_top,,,,,,,,
