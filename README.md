@@ -3,6 +3,10 @@
 
 ## Master
 
+![Slave Block Diagram](./readme_src/Master_bd.png)
+
 ## SLave
-![Slave Block Diagram](./readme_src/slave_bd.png)
-![LinBufferCtrl FSM](./readme_src/LineBuffer_fsm.png)
+
+![Slave Block Diagram](./readme_src/Slave_bd.png)
+
+![LinBufferCtrl FSM](./readme_src/Slave_ctrl_fsm.png)
