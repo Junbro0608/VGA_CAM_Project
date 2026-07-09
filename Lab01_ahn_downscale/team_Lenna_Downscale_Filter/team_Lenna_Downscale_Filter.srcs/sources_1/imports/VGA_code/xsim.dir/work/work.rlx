@@ -1,0 +1,8 @@
+0.7
+2020.2
+Nov 18 2020
+09:47:47
+d:/VGA_team4_project/team_Lenna_Downscale_Filter/team_Lenna_Downscale_Filter.srcs/sources_1/imports/VGA_code/ImgROM.sv,1783579075,systemVerilog,,,,ImgROM,,,,,,,,
+d:/VGA_team4_project/team_Lenna_Downscale_Filter/team_Lenna_Downscale_Filter.srcs/sources_1/imports/VGA_code/ImgRomReader.sv,1783580081,systemVerilog,,,,ImgRomReader,,,,,,,,
+d:/VGA_team4_project/team_Lenna_Downscale_Filter/team_Lenna_Downscale_Filter.srcs/sources_1/imports/VGA_code/VGA_Decoder.sv,1783040383,systemVerilog,,,,VGA_Decoder;pclk_gen;pixel_counter;vga_decoder,,,,,,,,
+d:/VGA_team4_project/team_Lenna_Downscale_Filter/team_Lenna_Downscale_Filter.srcs/sources_1/imports/VGA_code/top_VGA.sv,1783579704,systemVerilog,,,,demux_2x1;grayScale_Filter;mux_2x1;top_VGA,,,,,,,,
