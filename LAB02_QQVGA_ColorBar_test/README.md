@@ -2,7 +2,7 @@
 
 SW 기반 컬러 바운더리(초록 박스) 오버레이 구현 기록.
 
-![Day2 블록 다이어그램](./images/day2_greenbar_blockdiagram.jpg)
+![Day2 블록 다이어그램](./images/day2_greenbar_blockbiagram.jpg)
 
 ## 요약
 
@@ -41,6 +41,6 @@ SW 기반 컬러 바운더리(초록 박스) 오버레이 구현 기록.
 
 ## 검증
 
-<video src="./videos/day2_greenbar_video.mp4" controls width="480"></video>
+<video src="./images/day2_greenbar_vedio.mp4" controls width="480"></video>
 
 `sw[0]`, `sw[1]`, `sw[2]`를 각각 켰을 때 해당 컬럼에만 초록 바운더리(2px)가 검정 테두리 안쪽에 겹치지 않고 표시됨을 확인.
