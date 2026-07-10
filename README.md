@@ -7,4 +7,4 @@
 
 ## SLave
 
-![Slave Block Diagram](./readme_src/Slave_bd.png)
+![Slave Block Diagram](./readme_src/Slave_bd.png) 
