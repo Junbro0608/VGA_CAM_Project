@@ -2,8 +2,10 @@
 2020.2
 Nov 18 2020
 09:47:47
-d:/git_clone/VGA_CAM_Project/Lab00_VGA_OV7670_ctrl/VGA_OV7670_ctrl/N04_VGA_OV7670_ctrl.srcs/sources_1/OV7670_MemController.sv,1783500318,systemVerilog,,,,OV7670_MemController,,uvm,,,,,,
+d:/git_clone/VGA_CAM_Project/Lab00_VGA_OV7670_ctrl/VGA_OV7670_ctrl/N04_VGA_OV7670_ctrl.srcs/sources_1/UnScaleImage.sv,1783041598,systemVerilog,,,,UnScaleImage,,uvm,,,,,,
+d:/git_clone/VGA_CAM_Project/Lab00_VGA_OV7670_ctrl/VGA_OV7670_ctrl/N04_VGA_OV7670_ctrl.srcs/sources_1/VGA_Decoder.sv,1783310398,systemVerilog,,,,VGA_Decoder;pclk_gen;pixel_counter;vga_decoder,,uvm,,,,,,
 d:/git_clone/VGA_CAM_Project/Lab00_VGA_OV7670_ctrl/VGA_OV7670_ctrl/N04_VGA_OV7670_ctrl.srcs/sources_1/frameBuffer.sv,1783322940,systemVerilog,,,,frameBuffer,,uvm,,,,,,
 d:/git_clone/VGA_CAM_Project/Lab00_VGA_OV7670_ctrl/VGA_OV7670_ctrl/N04_VGA_OV7670_ctrl.srcs/sources_1/franeBuffeReader.sv,1783322282,systemVerilog,,,,frameBufferReader,,uvm,,,,,,
 d:/git_clone/VGA_CAM_Project/Lab00_VGA_OV7670_ctrl/VGA_OV7670_ctrl/N04_VGA_OV7670_ctrl.srcs/sources_1/rgb_filter.sv,1783050791,systemVerilog,,,,grayscale_filter;rgb_filter,,uvm,,,,,,
 d:/git_clone/VGA_CAM_Project/Lab00_VGA_OV7670_ctrl/VGA_OV7670_ctrl/N04_VGA_OV7670_ctrl.srcs/sources_1/top_VGA.sv,1783418142,systemVerilog,,,,demux_2x1;mux_2x1;mux_3x1;top_VGA,,uvm,,,,,,
+d:/git_clone/VGA_CAM_Project/Lab01_SPI_cam_Integration/SPI_cam_Integration/SPI_cam_Integration.srcs/sources_1/OV7670_MemController.sv,1783500318,systemVerilog,,,,OV7670_MemController,,uvm,,,,,,
