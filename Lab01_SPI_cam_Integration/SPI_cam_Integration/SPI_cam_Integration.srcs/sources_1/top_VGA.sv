@@ -50,12 +50,12 @@ module top_VGA (
 
     assign xclk = clk_25M;
 
-    btn_debounce U_btn_debounce(
-    .clk(clk),
-    .reset(reset),
-    .i_btn(OV_init_btn),
-    .o_btn(OV_init_btn_d)
-);
+    btn_debounce U_btn_debounce (
+        .clk  (clk),
+        .reset(reset),
+        .i_btn(OV_init_btn),
+        .o_btn(OV_init_btn_d)
+    );
 
 
     clk_wiz_0 U_clk_wiz (
@@ -113,72 +113,109 @@ module top_VGA (
         .rData(qvga_imgPxlData)
     );
 
-    frameBufferReader U_frameBufferReader (
-        .de        (de),
-        .x_pixel   (x_pixel),
-        .y_pixel   (y_pixel),
-        .addr      (org_addr),
-        .imgPxlData(qvga_imgPxlData),
-        .port_red  (org_red),
-        .port_green(org_green),
-        .port_blue (org_blue)
+    SPI_controller U_SPI_controller (
+        .clk        (clk_100M),
+        .reset      (reset),
+        // VGA_decoder side
+        .v_sync     (v_sync),
+        .x_pixel    (x_pixel),      // h_count 전체를 받음
+        .y_pixel    (y_pixel),      // v_count 전체를 받음
+        // SPI side
+        .spi_tx_data(spi_tx_data),
+        .start      (start),
+        .done       (done),
+        .busy       (busy),
+        .slv_select (slv_select)
     );
 
-    UnScaleImage u_UnScaleImage (
-        .de        (de),
-        .x_pixel   (x_pixel),
-        .y_pixel   (y_pixel),
-        .addr      (upscl_addr),
-        .imgPxlData(qvga_imgPxlData),
-        .port_red  (unscl_red),
-        .port_green(unscl_green),
-        .port_blue (unscl_blue)
+    spi_master_14bit U_SPI_MST_14bit (
+        .clk(clk_100M),
+        .reset(reset),
+        .cpol(0),  // idle 0: low, 1: high
+        .cpha(0),  // first sampling, 0: first edge, 1: second edge
+        .clk_div(4),
+        .tx_data(spi_tx_data),
+        .rx_data(spi_rx_data),
+        .start(start),
+        .done(done),
+        .busy(busy),
+        .sclk(sclk),
+        .mosi(mosi),
+        .miso(miso),
+        .cs_n(cs_n)
     );
 
-    mux_2x1 #(
-        .PORT_WIDTH($clog2(320 * 240))
-    ) U_addr_mux (
-        .sel(sw_upscl),
-        .x0 (org_addr),
-        .x1 (upscl_addr),
-        .y  (qvga_addr)
+    LineBufferx2 U_SLB0 (
+        // write side
+        .wclk(clk_100M),
+        .we(done & (slv_select)),
+        .wline(wline),
+        .wAddr(SLB0_wAddr),
+        .wData(spi_rx_data),
+        // read side
+        .rline(rline),
+        .rclk(rclk),
+        .rAddr(SLB0_rAddr),
+        .rData(SLB0_rData)
+    );
+    LineBufferx2 U_SLB1 (
+        // write side
+        .wclk(clk_100M),
+        .we(done & (slv_select)),
+        .wline(wline),
+        .wAddr(SLB1_wAddr),
+        .wData(spi_rx_data),
+        // read side
+        .rline(rline),
+        .rclk(rclk),
+        .rAddr(SLB1_rAddr),
+        .rData(SLB1_rData)
+    );
+    LineBufferx2 U_SLB2 (
+        // write side
+        .wclk(clk_100M),
+        .we(done & (slv_select)),
+        .wline(wline),
+        .wAddr(SLB2_wAddr),
+        .wData(spi_rx_data),
+        // read side
+        .rline(rline),
+        .rclk(rclk),
+        .rAddr(SLB2_rAddr),
+        .rData(SLB2_rData)
+    );
+    LineBufferx2 U_SLB3 (
+        // write side
+        .wclk(clk_100M),
+        .we(done & (slv_select)),
+        .wline(wline),
+        .wAddr(SLB3_wAddr),
+        .wData(spi_rx_data),
+        // read side
+        .rline(rline),
+        .rclk(rclk),
+        .rAddr(SLB3_rAddr),
+        .rData(SLB3_rData)
+    );
+    LineBufferx2 U_SLB4 (
+        // write side
+        .wclk(clk_100M),
+        .we(done & (slv_select)),
+        .wline(wline),
+        .wAddr(SLB4_wAddr),
+        .wData(spi_rx_data),
+        // read side
+        .rline(rline),
+        .rclk(rclk),
+        .rAddr(SLB4_rAddr),
+        .rData(SLB4_rData)
     );
 
-    logic [3:0] img_red, img_green, img_blue;
-    logic [3:0] rgb_red, rgb_green, rgb_blue;
-    logic [3:0] gray_red, gray_green, gray_blue;
-
-    mux_2x1 #(
-        .PORT_WIDTH(12)
-    ) U_unscl_mux (
-        .sel(sw_upscl),
-        .x0 ({org_red, org_green, org_blue}),
-        .x1 ({unscl_red, unscl_green, unscl_blue}),
-        .y  ({img_red, img_green, img_blue})
-    );
-
-
-    rgb_filter U_rgb_filter (
-        .sel({sw_clr_red, sw_clr_green, sw_clr_blue}),
-        .input_rgb({img_red, img_green, img_blue}),
-        .port_rgb({rgb_red, rgb_green, rgb_blue})
-    );
-
-    grayscale_filter U_grayscale_filter (
-        .in_rgb({img_red, img_green, img_blue}),
-        .port_gray({gray_red, gray_green, gray_blue})
-    );
-
-    mux_3x1 #(
-        .PORT_WIDTH(12)
-    ) U_outport_mux (
-        .sel(sw_mode),
-        .x0 ({img_red, img_green, img_blue}),
-        .x1 ({rgb_red, rgb_green, rgb_blue}),
-        .x2 ({gray_red, gray_green, gray_blue}),
-        .y  ({port_red, port_green, port_blue})
-    );
-
+    assign ss0 = (!cs_n) & (slv_select == 0);
+    assign ss1 = (!cs_n) & (slv_select == 1);
+    assign ss2 = (!cs_n) & (slv_select == 2);
+    assign ss3 = (!cs_n) & (slv_select == 3);
+    assign ss4 = (!cs_n) & (slv_select == 4);
 
 endmodule
 
@@ -206,20 +243,29 @@ module mux_3x1 #(
 endmodule
 
 
-module demux_2x1 #(
-    parameter PORT_WIDTH = 12
+module demux_5x1 #(
 ) (
-    input  logic                  sel,
-    input  logic [PORT_WIDTH-1:0] y,
-    output logic [PORT_WIDTH-1:0] x0,
-    output logic [PORT_WIDTH-1:0] x1
+    input  logic [2:0] sel,
+    input  logic       y,
+    output logic       x0,
+    output logic       x1,
+    output logic       x2,
+    output logic       x3,
+    output logic       x4
 );
     always_comb begin
-        x0 = 0;
-        x1 = 0;
+        x0 = 1;
+        x1 = 1;
+        x2 = 1;
+        x3 = 1;
+        x4 = 1;
         case (sel)
             0: x0 = y;
             1: x1 = y;
+            2: x2 = y;
+            3: x3 = y;
+            4: x4 = y;
+            default: x0 = y;
         endcase
     end
 endmodule

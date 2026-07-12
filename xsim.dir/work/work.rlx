@@ -2,11 +2,15 @@
 2020.2
 Nov 18 2020
 09:47:47
-d:/git_clone/VGA_CAM_Project/Lab01_SPI_cam_Integration/SPI_cam_Integration/SPI_cam_Integration.srcs/sources_1/DownScaleimage.sv,1783671484,systemVerilog,,,,DownScaleimage,,uvm,,,,,,
-d:/git_clone/VGA_CAM_Project/Lab01_SPI_cam_Integration/SPI_cam_Integration/SPI_cam_Integration.srcs/sources_1/Master_controller.sv,1783671717,systemVerilog,,,,,,uvm,,,,,,
-d:/git_clone/VGA_CAM_Project/Lab01_SPI_cam_Integration/SPI_cam_Integration/SPI_cam_Integration.srcs/sources_1/OV7670_MemController.sv,1783670861,systemVerilog,,,,OV7670_MemController,,uvm,,,,,,
-d:/git_clone/VGA_CAM_Project/Lab01_SPI_cam_Integration/SPI_cam_Integration/SPI_cam_Integration.srcs/sources_1/UnScaleImage.sv,1783670861,systemVerilog,,,,UnScaleImage,,uvm,,,,,,
-d:/git_clone/VGA_CAM_Project/Lab01_SPI_cam_Integration/SPI_cam_Integration/SPI_cam_Integration.srcs/sources_1/VGA_Decoder.sv,1783670861,systemVerilog,,,,VGA_Decoder;pclk_gen;pixel_counter;vga_decoder,,uvm,,,,,,
-d:/git_clone/VGA_CAM_Project/Lab01_SPI_cam_Integration/SPI_cam_Integration/SPI_cam_Integration.srcs/sources_1/frameBuffer.sv,1783670861,systemVerilog,,,,frameBuffer,,uvm,,,,,,
-d:/git_clone/VGA_CAM_Project/Lab01_SPI_cam_Integration/SPI_cam_Integration/SPI_cam_Integration.srcs/sources_1/franeBuffeReader.sv,1783670861,systemVerilog,,,,frameBufferReader,,uvm,,,,,,
-d:/git_clone/VGA_CAM_Project/Lab01_SPI_cam_Integration/SPI_cam_Integration/SPI_cam_Integration.srcs/sources_1/top_VGA.sv,1783670861,systemVerilog,,,,demux_2x1;mux_2x1;mux_3x1;top_VGA,,uvm,,,,,,
+d:/project_2026/VGA_CAM_Project/Lab00_VGA_OV7670_ctrl/VGA_OV7670_ctrl/N04_VGA_OV7670_ctrl.srcs/sim_1/new/tb_OV7670_controller.sv,1783820596,systemVerilog,,,,tb_OV7670_controller,,,,,,,,
+d:/project_2026/VGA_CAM_Project/Lab00_VGA_OV7670_ctrl/VGA_OV7670_ctrl/N04_VGA_OV7670_ctrl.srcs/sources_1/OV7670_ctrl/OV7670_controller.sv,1783820596,systemVerilog,,,,OV7670_controller;RW_ADDR_ROM;init_ROM,,,,,,,,
+d:/project_2026/VGA_CAM_Project/Lab00_VGA_OV7670_ctrl/VGA_OV7670_ctrl/N04_VGA_OV7670_ctrl.srcs/sources_1/OV7670_ctrl/SCCB.sv,1783820596,systemVerilog,,,,I2C_Master;SCCB;SCCB_FSM;i2c_master,,,,,,,,
+d:/project_2026/VGA_CAM_Project/Lab00_VGA_OV7670_ctrl/VGA_OV7670_ctrl/N04_VGA_OV7670_ctrl.srcs/sources_1/UnScaleImage.sv,1783820596,systemVerilog,,,,UnScaleImage,,,,,,,,
+d:/project_2026/VGA_CAM_Project/Lab00_VGA_OV7670_ctrl/VGA_OV7670_ctrl/N04_VGA_OV7670_ctrl.srcs/sources_1/VGA_Decoder.sv,1783820596,systemVerilog,,,,VGA_Decoder;pclk_gen;pixel_counter;vga_decoder,,,,,,,,
+d:/project_2026/VGA_CAM_Project/Lab00_VGA_OV7670_ctrl/VGA_OV7670_ctrl/N04_VGA_OV7670_ctrl.srcs/sources_1/frameBuffer.sv,1783820596,systemVerilog,,,,frameBuffer,,,,,,,,
+d:/project_2026/VGA_CAM_Project/Lab01_SPI_cam_Integration/SPI_cam_Integration/SPI_cam_Integration.srcs/sources_1/LineBuffer.sv,1783829952,systemVerilog,,,,LineBufferx2,,,,,,,,
+d:/project_2026/VGA_CAM_Project/Lab01_SPI_cam_Integration/SPI_cam_Integration/SPI_cam_Integration.srcs/sources_1/OV7670_MemController.sv,1783820596,systemVerilog,,,,OV7670_MemController,,,,,,,,
+d:/project_2026/VGA_CAM_Project/Lab01_SPI_cam_Integration/SPI_cam_Integration/SPI_cam_Integration.srcs/sources_1/SPI_Master_14bit.sv,1783830349,systemVerilog,,,,spi_master_14bit,,,,,,,,
+d:/project_2026/VGA_CAM_Project/Lab01_SPI_cam_Integration/SPI_cam_Integration/SPI_cam_Integration.srcs/sources_1/SPI_controller.sv,1783828940,systemVerilog,,,,SPI_controller,,,,,,,,
+d:/project_2026/VGA_CAM_Project/Lab01_SPI_cam_Integration/SPI_cam_Integration/SPI_cam_Integration.srcs/sources_1/franeBuffeReader.sv,1783829745,systemVerilog,,,,frameBufferReader,,,,,,,,
+d:/project_2026/VGA_CAM_Project/Lab01_SPI_cam_Integration/SPI_cam_Integration/SPI_cam_Integration.srcs/sources_1/top_VGA.sv,1783832391,systemVerilog,,,,demux_5x1;mux_2x1;mux_3x1;top_VGA,,,,,,,,
