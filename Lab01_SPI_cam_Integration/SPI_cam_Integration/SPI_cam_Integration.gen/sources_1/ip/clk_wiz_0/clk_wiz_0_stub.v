@@ -3,8 +3,8 @@
 // Tool Version: Vivado v.2020.2 (win64) Build 3064766 Wed Nov 18 09:12:45 MST 2020
 // Date        : Fri Jul 10 17:09:48 2026
 // Host        : DESKTOP-7CFQ9ND running 64-bit major release  (build 9200)
-// Command     : write_verilog -force -mode synth_stub
-//               d:/git_clone/VGA_CAM_Project/Lab01_SPI_cam_Integration/SPI_cam_Integration/SPI_cam_Integration.gen/sources_1/ip/clk_wiz_0/clk_wiz_0_stub.v
+// Command     : write_verilog -force -mode synth_stub -rename_top clk_wiz_0 -prefix
+//               clk_wiz_0_ clk_wiz_0_stub.v
 // Design      : clk_wiz_0
 // Purpose     : Stub declaration of top-level module interface
 // Device      : xc7a35tcpg236-1

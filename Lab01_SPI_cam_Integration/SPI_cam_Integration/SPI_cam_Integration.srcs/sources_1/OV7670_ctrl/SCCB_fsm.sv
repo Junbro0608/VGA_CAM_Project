@@ -289,11 +289,11 @@ module SCCB_fsm (
                     write    = 1'b1;
                 end
 
-                next_state = S0;
+                //next_state = S0;
             end
 
             default: begin
-                next_state = S0;
+                //next_state = S0;
             end
         endcase
     end

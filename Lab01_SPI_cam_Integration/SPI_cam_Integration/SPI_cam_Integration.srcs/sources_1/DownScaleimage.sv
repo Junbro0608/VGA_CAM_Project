@@ -27,3 +27,14 @@ module DownScaleimage(
 
 
 endmodule
+
+
+module DownScaleimg(
+    input logic we,
+    input logic [$clog2(160*120)-1:0] addr,
+    input logic [               15:0] wData,
+    output logic o_we,
+    output logic [$clog2(160*120)-1:0] o_addr,
+    output logic [               15:0] o_wData
+);
+endmodule
