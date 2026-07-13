@@ -17,6 +17,7 @@ vivado*.backup.log
 *.sim/
 *.runs/
 *.ip_user_files/
+*.cache/
 
 # 하드웨어 플랫폼 및 익스포트 데이터
 # (보통 .xsa 파일만 관리하고 아래 폴더들은 자동 생성되므로 제외)
