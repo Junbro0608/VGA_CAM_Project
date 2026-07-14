@@ -5,20 +5,20 @@ module SPI_sender (
     //Decoder
     input  logic        decoder_start,
     output logic        fsm_done,
-    output logic        SPI_error,
+    output logic [ 4:0] SPI_error,
     //SPI side
     output logic        sclk,
-    output logic [ 7:0] mosi,
-    input  logic [ 7:0] miso,
+    output logic        mosi,
+    input  logic        miso,
     output logic [ 4:0] cs_n,
     //write mem side
     output logic        we,
     output logic [11:0] waddr,
     output logic [23:0] wdata
 );
-    logic [7:0] SPI_tx_data,SPI_rx_data;
-    logic SPI_start,SPI_done,SPI_busy,SPI_cs_n;
-    logic [4:0]ss_n;
+    logic [7:0] SPI_tx_data, SPI_rx_data;
+    logic SPI_start, SPI_done, SPI_busy, SPI_cs_n;
+    logic [4:0] ss_n;
 
     assign cs_n[0] = SPI_cs_n | ss_n[0];
     assign cs_n[1] = SPI_cs_n | ss_n[1];
@@ -50,8 +50,8 @@ module SPI_sender (
     spi_master U_spi_master (
         .clk    (clk),
         .reset  (reset),
-        .cpol   (1'b0),            // idle 0: low, 1: high
-        .cpha   (1'b0),            // first sampling, 0: first edge, 1: second edge
+        .cpol   (1'b0),         // idle 0: low, 1: high
+        .cpha   (1'b0),         // first sampling, 0: first edge, 1: second edge
         .clk_div(8'h4),
         .tx_data(SPI_tx_data),
         .start  (SPI_start),

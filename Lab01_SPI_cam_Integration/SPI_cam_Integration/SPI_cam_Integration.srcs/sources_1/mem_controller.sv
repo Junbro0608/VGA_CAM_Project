@@ -4,7 +4,6 @@ module mem_controller (
     input  logic       clk,
     input  logic       reset,
     // Decoder
-    input  logic       de,
     input  logic [9:0] x_pixel,
     input  logic [9:0] y_pixel,
     // SPI side

@@ -1,21 +1,21 @@
 `timescale 1ns / 1ps
 
 module MMU (
-    //OV7670 side
+    //Mem write side
     input  logic                         CAM_pclk,
     input  logic                         CAM_we,
-    input  logic [  $clog2(106*120)-1:0] CAM_wAddr,
+    input  logic [  $clog2(320*240)-1:0] CAM_wAddr,
     input  logic [                 15:0] CAM_wData,
     //Mem write side
     input  logic                         wclk,
     input  logic [                  4:0] w_sel,
     input  logic                         we,
-    input  logic [$clog2(106*120*5)-1:0] wAddr,
+    input  logic [$clog2(106*120/4)-1:0] wAddr,
     input  logic [                 11:0] wData,
     //Mem read side
     input  logic                         rclk,
     input  logic [                  4:0] r_sel,
-    input  logic [  $clog2(106*120)-1:0] cam_rAddr,
+    input  logic [  $clog2(320*240)-1:0] cam_rAddr,
     input  logic [$clog2(106*120/4)-1:0] mem_rAddr,
     output logic [                 23:0] rData0,
     output logic [                 11:0] rData1,
@@ -188,15 +188,15 @@ module frameBuffer (
     // write side
     input  logic                       wclk,
     input  logic                       we,
-    input  logic [$clog2(106*120)-1:0] wAddr,
+    input  logic [$clog2(320*240)-1:0] wAddr,
     input  logic [               11:0] wData,
     // read side
     input  logic                       rclk,
-    input  logic [$clog2(106*120)-1:0] rAddr,
+    input  logic [$clog2(320*240)-1:0] rAddr,
     output logic [               11:0] rData
 );
 
-    logic [11:0] mem[0:(106*120)-1];
+    logic [11:0] mem[0:(320*240)-1];
 
     //write
     always_ff @(posedge wclk) begin
@@ -215,15 +215,15 @@ module YCoCgframeBuffer (
     // write side
     input  logic                         wclk,
     input  logic                         we,
-    input  logic [$clog2(320*240/4)-1:0] wAddr,
+    input  logic [$clog2(106*120/4)-1:0] wAddr,
     input  logic [                 23:0] wData,
     // read side
     input  logic                         rclk,
-    input  logic [$clog2(320*240/4)-1:0] rAddr,
+    input  logic [$clog2(106*120/4)-1:0] rAddr,
     output logic [                 23:0] rData
 );
 
-    logic [23:0] mem[0:(320*240/4)-1];
+    logic [23:0] mem[0:(106*120/4)-1];
 
     //write
     always_ff @(posedge wclk) begin

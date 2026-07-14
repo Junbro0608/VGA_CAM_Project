@@ -79,14 +79,6 @@ set_property -dict { PACKAGE_PIN H1   IOSTANDARD LVCMOS33 } [get_ports {cs_n[1]}
 set_property -dict { PACKAGE_PIN K2   IOSTANDARD LVCMOS33 } [get_ports {cs_n[2]}];#Sch name = JA8
 set_property -dict { PACKAGE_PIN H2   IOSTANDARD LVCMOS33 } [get_ports {cs_n[3]}];#Sch name = JA9
 set_property -dict { PACKAGE_PIN G3   IOSTANDARD LVCMOS33 } [get_ports {cs_n[4]}];#Sch name = JA10
-set_property IOSTANDARD LVCMOS33 [get_ports {sclk}]
-set_property IOSTANDARD LVCMOS33 [get_ports {miso}]
-set_property IOSTANDARD LVCMOS33 [get_ports {mosi}]
-set_property IOSTANDARD LVCMOS33 [get_ports {cs_n[0}]
-set_property IOSTANDARD LVCMOS33 [get_ports {cs_n[1]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {cs_n[2]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {cs_n[3]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {cs_n[4]}]
 
 ##Pmod Header JB
 # set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets pclk_IBUF]
@@ -98,12 +90,7 @@ set_property -dict { PACKAGE_PIN B16   IOSTANDARD LVCMOS33 } [get_ports {sda}];#
 set_property -dict { PACKAGE_PIN A17   IOSTANDARD LVCMOS33 } [get_ports {href}];#Sch name = JB8
 set_property -dict { PACKAGE_PIN C15   IOSTANDARD LVCMOS33 } [get_ports {xclk}];#Sch name = JB9
 set_property -dict { PACKAGE_PIN C16   IOSTANDARD LVCMOS33 } [get_ports {pclk}];#Sch name = JB10
-set_property IOSTANDARD LVCMOS33 [get_ports {vsync}]
-set_property IOSTANDARD LVCMOS33 [get_ports {scl}]
-set_property IOSTANDARD LVCMOS33 [get_ports {sda}]
-set_property IOSTANDARD LVCMOS33 [get_ports {href}]
-set_property IOSTANDARD LVCMOS33 [get_ports {xclk}]
-set_property IOSTANDARD LVCMOS33 [get_ports {pclk}]
+
 
 ##Pmod Header JC
 set_property -dict { PACKAGE_PIN K17   IOSTANDARD LVCMOS33 } [get_ports {pdata[7]}];#Sch name = JC1
@@ -114,14 +101,7 @@ set_property -dict { PACKAGE_PIN L17   IOSTANDARD LVCMOS33 } [get_ports {pdata[6
 set_property -dict { PACKAGE_PIN M19   IOSTANDARD LVCMOS33 } [get_ports {pdata[4]}];#Sch name = JC8
 set_property -dict { PACKAGE_PIN P17   IOSTANDARD LVCMOS33 } [get_ports {pdata[2]}];#Sch name = JC9
 set_property -dict { PACKAGE_PIN R18   IOSTANDARD LVCMOS33 } [get_ports {pdata[0]}];#Sch name = JC10
-set_property IOSTANDARD LVCMOS33 [get_ports {pdata[7]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {pdata[6]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {pdata[5]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {pdata[4]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {pdata[3]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {pdata[2]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {pdata[1]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {pdata[0]}]
+
 
 ##Pmod Header JXADC
 #set_property -dict { PACKAGE_PIN J3   IOSTANDARD LVCMOS33 } [get_ports {JXADC[0]}];#Sch name = XA1_P
@@ -135,41 +115,20 @@ set_property IOSTANDARD LVCMOS33 [get_ports {pdata[0]}]
 
 
 ##VGA Connector
-# VGA Red
-set_property PACKAGE_PIN V14 [get_ports {port_red[0]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {port_red[0]}]
-set_property PACKAGE_PIN U14 [get_ports {port_red[1]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {port_red[1]}]
-set_property PACKAGE_PIN V13 [get_ports {port_red[2]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {port_red[2]}]
-set_property PACKAGE_PIN V12 [get_ports {port_red[3]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {port_red[3]}]
-
-# VGA Green
-set_property PACKAGE_PIN J17 [get_ports {port_green[0]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {port_green[0]}]
-set_property PACKAGE_PIN H17 [get_ports {port_green[1]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {port_green[1]}]
-set_property PACKAGE_PIN G17 [get_ports {port_green[2]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {port_green[2]}]
-set_property PACKAGE_PIN D17 [get_ports {port_green[3]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {port_green[3]}]
-
-# VGA Blue
-set_property PACKAGE_PIN N17 [get_ports {port_blue[0]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {port_blue[0]}]
-set_property PACKAGE_PIN L18 [get_ports {port_blue[1]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {port_blue[1]}]
-set_property PACKAGE_PIN K18 [get_ports {port_blue[2]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {port_blue[2]}]
-set_property PACKAGE_PIN J18 [get_ports {port_blue[3]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {port_blue[3]}]
-
-# VGA Sync
-set_property PACKAGE_PIN P19 [get_ports h_sync]
-set_property IOSTANDARD LVCMOS33 [get_ports h_sync]
-set_property PACKAGE_PIN R19 [get_ports v_sync]
-set_property IOSTANDARD LVCMOS33 [get_ports v_sync]
+set_property -dict { PACKAGE_PIN G19   IOSTANDARD LVCMOS33 } [get_ports {port_red[0]}]
+set_property -dict { PACKAGE_PIN H19   IOSTANDARD LVCMOS33 } [get_ports {port_red[1]}]
+set_property -dict { PACKAGE_PIN J19   IOSTANDARD LVCMOS33 } [get_ports {port_red[2]}]
+set_property -dict { PACKAGE_PIN N19   IOSTANDARD LVCMOS33 } [get_ports {port_red[3]}]
+set_property -dict { PACKAGE_PIN N18   IOSTANDARD LVCMOS33 } [get_ports {port_blue[0]}]
+set_property -dict { PACKAGE_PIN L18   IOSTANDARD LVCMOS33 } [get_ports {port_blue[1]}]
+set_property -dict { PACKAGE_PIN K18   IOSTANDARD LVCMOS33 } [get_ports {port_blue[2]}]
+set_property -dict { PACKAGE_PIN J18   IOSTANDARD LVCMOS33 } [get_ports {port_blue[3]}]
+set_property -dict { PACKAGE_PIN J17   IOSTANDARD LVCMOS33 } [get_ports {port_green[0]}]
+set_property -dict { PACKAGE_PIN H17   IOSTANDARD LVCMOS33 } [get_ports {port_green[1]}]
+set_property -dict { PACKAGE_PIN G17   IOSTANDARD LVCMOS33 } [get_ports {port_green[2]}]
+set_property -dict { PACKAGE_PIN D17   IOSTANDARD LVCMOS33 } [get_ports {port_green[3]}]
+set_property -dict { PACKAGE_PIN P19   IOSTANDARD LVCMOS33 } [get_ports h_sync]
+set_property -dict { PACKAGE_PIN R19   IOSTANDARD LVCMOS33 } [get_ports v_sync]
 
 
 ##USB-RS232 Interface

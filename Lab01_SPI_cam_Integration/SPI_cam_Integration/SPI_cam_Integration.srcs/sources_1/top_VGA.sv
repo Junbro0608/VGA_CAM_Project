@@ -1,9 +1,9 @@
 `timescale 1ns / 1ps
 
 module top_master (
-    input  logic       clk,
-    input  logic       reset,
-    
+    input logic clk,
+    input logic reset,
+
     // i2c side
     output logic       scl,
     inout  logic       sda,
@@ -33,30 +33,30 @@ module top_master (
     assign xclk = clk_25M;
 
     // VGA Decoder 및 픽셀 신호
-    logic [ 9:0] x_pixel;
-    logic [ 9:0] y_pixel;
-    logic        de;
+    logic [                  9:0] x_pixel;
+    logic [                  9:0] y_pixel;
+    logic                         de;
 
     // OV7670 -> MMU 쓰기 신호
-    logic        we;
-    logic [$clog2(320*240)-1:0] wAddr;
-    logic [ 15:0] wData;
+    logic                         we;
+    logic [  $clog2(320*240)-1:0] wAddr;
+    logic [                 15:0] wData;
 
     // SPI 관련 신호
-    logic        decoder_start;
-    logic        fsm_done;       
-    logic [ 4:0] SPI_error;
-    logic        SPI_we;
-    logic [$clog2(106*120*5)-1:0] SPI_waddr; 
-    logic [ 11:0] SPI_wdata;
+    logic                         decoder_start;
+    logic                         fsm_done;
+    logic [                  4:0] SPI_error;
+    logic                         SPI_we;
+    logic [$clog2(106*120*5)-1:0] SPI_waddr;
+    logic [                 11:0] SPI_wdata;
 
     // MMU 제어 및 데이터 신호
-    logic [ 4:0] r_sel, w_sel;   
+    logic [4:0] r_sel, w_sel;
 
     // 주소 및 데이터 분리 신호
-    logic [$clog2(106*120)-1:0]   cam_rAddr;
+    logic [  $clog2(320*240)-1:0] cam_rAddr;
     logic [$clog2(106*120/4)-1:0] mem_rAddr;
-    
+
     logic [24:0] rData0, rData2, rData3, rData4, rData5;
     logic [11:0] rData1;
 
@@ -119,15 +119,15 @@ module top_master (
     );
 
     mem_controller U_mem_controller (
-        .clk          (clk_100M),
-        .reset        (reset),
-        .de           (de),
-        .x_pixel      (x_pixel),
-        .y_pixel      (y_pixel),
-        .SPI_error    (SPI_error),
-        .SPI_fsm_done (fsm_done), // [수정] SPI_sender의 출력인 fsm_done에 연결
-        .w_sel        (w_sel),
-        .r_sel        (r_sel)
+        .clk         (clk_100M),
+        .reset       (reset),
+        .x_pixel     (x_pixel),
+        .y_pixel     (y_pixel),
+        .SPI_start   (decoder_start),
+        .SPI_error   (SPI_error),
+        .SPI_fsm_done(fsm_done),
+        .w_sel       (w_sel),
+        .r_sel       (r_sel)
     );
 
     MMU U_MMU (
@@ -151,25 +151,35 @@ module top_master (
         .rData4   (rData4),
         .rData5   (rData5)
     );
+    DownScaleimage U_DownScaleimage(
+    .de(),
+    .x_pixel(),
+    .y_pixel(),
+    .addr(),
+    .imgPxlData(),
+    .port_red(),
+    .port_green(),
+    .port_blue()
+);
 
     UnScaleImage U_UnScaleImage (
-        .de         (de),
-        .x_pixel    (x_pixel),
-        .y_pixel    (y_pixel),
+        .de        (de),
+        .x_pixel   (x_pixel),
+        .y_pixel   (y_pixel),
         // cam side 
-        .cam_raddr  (cam_rAddr),
-        .cam_rdata1 (rData1),
+        .cam_raddr (cam_rAddr),
+        .cam_rdata1(rData1),
         // mem side 
-        .mem_raddr  (mem_rAddr),
-        .mem_rdata0 (rData0),
-        .mem_rdata2 (rData2),
-        .mem_rdata3 (rData3),
-        .mem_rdata4 (rData4),
-        .mem_rdata5 (rData5),
+        .mem_raddr (mem_rAddr),
+        .mem_rdata0(rData0),
+        .mem_rdata2(rData2),
+        .mem_rdata3(rData3),
+        .mem_rdata4(rData4),
+        .mem_rdata5(rData5),
         // VGA side
-        .port_red   (port_red),
-        .port_green (port_green),
-        .port_blue  (port_blue)
+        .port_red  (port_red),
+        .port_green(port_green),
+        .port_blue (port_blue)
     );
 
 endmodule

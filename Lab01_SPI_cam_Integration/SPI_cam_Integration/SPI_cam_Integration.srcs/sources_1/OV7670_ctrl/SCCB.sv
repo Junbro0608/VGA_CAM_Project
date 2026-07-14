@@ -23,7 +23,7 @@ module SCCB (
     logic       I2C_cmd_read;
     logic       I2C_cmd_stop;
 
-    SCCB_FSM U_SCCB_FSM (
+    I2C_FSM U_I2C_FSM (
         .clk          (clk),
         .reset        (reset),
         //fsm side
@@ -65,7 +65,7 @@ module SCCB (
 
 endmodule
 
-module SCCB_FSM (
+module I2C_FSM (
     input  logic       clk,
     input  logic       reset,
     //fsm side
