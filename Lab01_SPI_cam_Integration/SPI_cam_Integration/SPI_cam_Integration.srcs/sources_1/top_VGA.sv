@@ -46,7 +46,7 @@ module top_master (
     logic                         decoder_start;
     logic                         fsm_done;
     logic [                  4:0] SPI_error;
-    logic                         SPI_we;
+    logic [                  4:0] SPI_we;
     logic [$clog2(106*120/4)-1:0] SPI_waddr;
     logic [                 23:0] SPI_wdata;
 
@@ -63,7 +63,15 @@ module top_master (
 
     // 불필요한(Floating) Logic 선언부 싹 정리 완료!
 
-
+    ila_0 U_ila_0 (
+        .clk(clk),  // input wire clk
+        .probe0(SPI_error[0]),  // input wire [0:0]  probe0  
+        .probe1(SPI_we[0]),  // input wire [0:0]  probe1 
+        .probe2(SPI_waddr),  // input wire [11:0]  probe2 
+        .probe3(SPI_wdata),  // input wire [22:0]  probe3 
+        .probe4(cs_n[0]),  // input wire [0:0]  probe4 
+        .probe5(miso)   // input wire [0:0]  probe5
+    );
     // ==========================================
     // 🧱 하위 모듈 인스턴스화
     // ==========================================

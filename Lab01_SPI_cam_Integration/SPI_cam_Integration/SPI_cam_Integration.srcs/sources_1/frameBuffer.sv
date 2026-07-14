@@ -9,7 +9,7 @@ module MMU (
     //Mem write side
     input  logic                         wclk,
     input  logic [                  4:0] w_sel,
-    input  logic                         we,
+    input  logic [                  4:0] we,
     input  logic [$clog2(106*120/4)-1:0] wAddr,
     input  logic [                 23:0] wData,
     //Mem read side
@@ -30,29 +30,39 @@ module MMU (
     logic we0B, we2B, we3B, we4B, we5B;
     logic [11:0] Cam_rData;
     logic [23:0]
-        local_rData0A, local_rData1A, local_rData2A, local_rData3A, local_rData4A, local_rData5A;
+        local_rData0A,
+        local_rData1A,
+        local_rData2A,
+        local_rData3A,
+        local_rData4A,
+        local_rData5A;
     logic [23:0]
-        local_rData0B, local_rData1B, local_rData2B, local_rData3B, local_rData4B, local_rData5B;
+        local_rData0B,
+        local_rData1B,
+        local_rData2B,
+        local_rData3B,
+        local_rData4B,
+        local_rData5B;
 
 
-    assign we0A   = (!w_sel[0] & we);
-    assign we2A   = (!w_sel[1] & we);
-    assign we3A   = (!w_sel[2] & we);
-    assign we4A   = (!w_sel[3] & we);
-    assign we5A   = (!w_sel[4] & we);
+    assign we0A   = (!w_sel[0] & we[0]);
+    assign we2A   = (!w_sel[1] & we[1]);
+    assign we3A   = (!w_sel[2] & we[2]);
+    assign we4A   = (!w_sel[3] & we[3]);
+    assign we5A   = (!w_sel[4] & we[4]);
 
-    assign we0B   = (w_sel[0] & we);
-    assign we2B   = (w_sel[1] & we);
-    assign we3B   = (w_sel[2] & we);
-    assign we4B   = (w_sel[3] & we);
-    assign we5B   = (w_sel[4] & we);
+    assign we0B   = (w_sel[0] & we[0]);
+    assign we2B   = (w_sel[1] & we[1]);
+    assign we3B   = (w_sel[2] & we[2]);
+    assign we4B   = (w_sel[3] & we[3]);
+    assign we5B   = (w_sel[4] & we[4]);
 
     assign rData0 = (r_sel[0]) ? local_rData0B : local_rData0A;
     assign rData1 = Cam_rData;
-    assign rData2 = (r_sel[1]) ? local_rData0B : local_rData0A;
-    assign rData3 = (r_sel[2]) ? local_rData0B : local_rData0A;
-    assign rData4 = (r_sel[3]) ? local_rData0B : local_rData0A;
-    assign rData5 = (r_sel[4]) ? local_rData0B : local_rData0A;
+    assign rData2 = r_sel[1] ? local_rData2B : local_rData2A;
+    assign rData3 = r_sel[2] ? local_rData3B : local_rData3A;
+    assign rData4 = r_sel[3] ? local_rData4B : local_rData4A;
+    assign rData5 = r_sel[4] ? local_rData5B : local_rData5A;
 
     //CAM mem
     frameBuffer U_IMG1 (
@@ -78,7 +88,9 @@ module MMU (
         .rAddr(mem_rAddr),
         .rData(local_rData0A)
     );
-    YCoCgframeBuffer U_IMG2A (
+    YCoCgframeBuffer #(
+        .INIT_FILE("image_a0.mem")
+    ) U_IMG2A (
         // write side
         .wclk (wclk),
         .we   (we2A),
@@ -89,7 +101,9 @@ module MMU (
         .rAddr(mem_rAddr),
         .rData(local_rData2A)
     );
-    YCoCgframeBuffer U_IMG3A (
+    YCoCgframeBuffer #(
+        .INIT_FILE("image_a1.mem")
+    ) U_IMG3A (
         // write side
         .wclk (wclk),
         .we   (we3A),
@@ -100,7 +114,9 @@ module MMU (
         .rAddr(mem_rAddr),
         .rData(local_rData3A)
     );
-    YCoCgframeBuffer U_IMG4A (
+    YCoCgframeBuffer #(
+        .INIT_FILE("image_a2.mem")
+    ) U_IMG4A (
         // write side
         .wclk (wclk),
         .we   (we4A),
@@ -111,7 +127,9 @@ module MMU (
         .rAddr(mem_rAddr),
         .rData(local_rData4A)
     );
-    YCoCgframeBuffer U_IMG5A (
+    YCoCgframeBuffer #(
+        .INIT_FILE("image_a3.mem")
+    ) U_IMG5A (
         // write side
         .wclk (wclk),
         .we   (we5A),
@@ -134,7 +152,10 @@ module MMU (
         .rAddr(mem_rAddr),
         .rData(local_rData0B)
     );
-    YCoCgframeBuffer U_IMG2B (
+
+    YCoCgframeBuffer #(
+        .INIT_FILE("image_b0.mem")
+    ) U_IMG2B (
         // write side
         .wclk (wclk),
         .we   (we2B),
@@ -145,7 +166,10 @@ module MMU (
         .rAddr(mem_rAddr),
         .rData(local_rData2B)
     );
-    YCoCgframeBuffer U_IMG3B (
+
+    YCoCgframeBuffer #(
+        .INIT_FILE("image_b1.mem")
+    ) U_IMG3B (
         // write side
         .wclk (wclk),
         .we   (we3B),
@@ -156,7 +180,9 @@ module MMU (
         .rAddr(mem_rAddr),
         .rData(local_rData3B)
     );
-    YCoCgframeBuffer U_IMG4B (
+    YCoCgframeBuffer #(
+        .INIT_FILE("image_b2.mem")
+    ) U_IMG4B (
         // write side
         .wclk (wclk),
         .we   (we4B),
@@ -167,7 +193,9 @@ module MMU (
         .rAddr(mem_rAddr),
         .rData(local_rData4B)
     );
-    YCoCgframeBuffer U_IMG5B (
+    YCoCgframeBuffer #(
+        .INIT_FILE("image_b3.mem")
+    ) U_IMG5B (
         // write side
         .wclk (wclk),
         .we   (we5B),
@@ -178,9 +206,6 @@ module MMU (
         .rAddr(mem_rAddr),
         .rData(local_rData5B)
     );
-
-
-
 
 endmodule
 
@@ -211,7 +236,9 @@ module frameBuffer (
 endmodule
 
 
-module YCoCgframeBuffer (
+module YCoCgframeBuffer #(
+    parameter string INIT_FILE = ""
+) (
     // write side
     input  logic                         wclk,
     input  logic                         we,
@@ -224,6 +251,12 @@ module YCoCgframeBuffer (
 );
 
     logic [23:0] mem[0:(106*120/4)-1];
+
+    initial begin
+        if (INIT_FILE != "") begin
+            $readmemh(INIT_FILE, mem);
+        end
+    end
 
     //write
     always_ff @(posedge wclk) begin

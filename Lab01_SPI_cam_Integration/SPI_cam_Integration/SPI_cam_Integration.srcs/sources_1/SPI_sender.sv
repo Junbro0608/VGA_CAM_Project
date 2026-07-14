@@ -12,7 +12,7 @@ module SPI_sender (
     input  logic        miso,
     output logic [ 4:0] cs_n,
     //write mem side
-    output logic        we,
+    output logic [ 4:0] we,
     output logic [11:0] waddr,
     output logic [23:0] wdata
 );
@@ -48,21 +48,21 @@ module SPI_sender (
 
 
     spi_master U_spi_master (
-        .clk    (clk),
-        .reset  (reset),
-        .cpol   (1'b0),         // idle 0: low, 1: high
-        .cpha   (1'b0),         // first sampling, 0: first edge, 1: second edge
+        .clk(clk),
+        .reset(reset),
+        .cpol(1'b0),  // idle 0: low, 1: high
+        .cpha(1'b0),  // first sampling, 0: first edge, 1: second edge
         .clk_div(8'h4),
         .tx_data(SPI_tx_data),
-        .start  (SPI_start),
+        .start(SPI_start),
         .rx_data(SPI_rx_data),
-        .done   (SPI_done),
-        .busy   (SPI_busy),
+        .done(SPI_done),
+        .busy(SPI_busy),
         //인터널
-        .sclk   (sclk),
-        .mosi   (mosi),
-        .miso   (miso),
-        .cs_n   (SPI_cs_n)
+        .sclk(sclk),
+        .mosi(mosi),
+        .miso(miso),
+        .cs_n(SPI_cs_n)
     );
 
 endmodule
@@ -89,7 +89,7 @@ module SPI_FSM (
     output logic [4:0] ss_n,
 
     // --- Frame Buffer (MMU) 쓰기 포트 ---
-    output logic        we,
+    output logic [ 4:0] we,
     output logic [11:0] waddr,
     output logic [23:0] wdata
 );
@@ -121,8 +121,20 @@ module SPI_FSM (
     // --- 출력 포트 매핑 ---
     assign wdata    = data_buf;
     assign waddr    = loop_cnt;
-    assign we       = (state == WRITE_MEM);
     assign fsm_done = (state == FRAME_DONE);
+    always_comb begin
+        we = 5'b00000;
+        if (state == WRITE_MEM) begin
+            case (slv_idx)
+                3'd0: we = 5'b00001;
+                3'd1: we = 5'b00010;
+                3'd2: we = 5'b00100;
+                3'd3: we = 5'b01000;
+                3'd4: we = 5'b10000;
+                default: we = 5'b00000;
+            endcase
+        end
+    end
 
     // --- 고속 상태 머신 (동기 리셋 유지) ---
     always_ff @(posedge clk) begin
@@ -134,7 +146,7 @@ module SPI_FSM (
             slv_idx   <= 0;
             loop_cnt  <= 0;
             data_buf  <= 24'h000000;
-            spi_error <= 5'b00000; 
+            spi_error <= 5'b00000;
         end else begin
             case (state)
                 // 1. 트리거 대기 상태
@@ -151,7 +163,7 @@ module SPI_FSM (
                 SEND_HEADER: begin
                     if (!busy) begin
                         ss_n    <= ~(5'b00001 << slv_idx);
-                        tx_data <= 8'hA9; 
+                        tx_data <= 8'hA9;
                         start   <= 1'b1;
                         state   <= WAIT_HEADER_DONE;
                     end
@@ -169,8 +181,8 @@ module SPI_FSM (
                         end else begin
                             // [통신 불가능] 에러 비트 세팅 후 즉시 중단 및 다음 슬레이브 스킵
                             spi_error[slv_idx] <= 1'b1;
-                            ss_n               <= 5'b11111; 
-                            state              <= NEXT_SLAVE_CHECK; 
+                            ss_n               <= 5'b11111;
+                            state              <= NEXT_SLAVE_CHECK;
                         end
                     end
                 end
@@ -242,7 +254,7 @@ module SPI_FSM (
                 // 9. 5개 슬레이브 순회
                 NEXT_SLAVE_CHECK: begin
                     if (slv_idx == 4) begin
-                        state <= FRAME_DONE;  
+                        state <= FRAME_DONE;
                     end else begin
                         slv_idx  <= slv_idx + 1;
                         loop_cnt <= 0;
@@ -252,7 +264,7 @@ module SPI_FSM (
 
                 // 10. 완료 보고
                 FRAME_DONE: begin
-                    state <= FRAME_START; 
+                    state <= FRAME_START;
                 end
 
                 default: state <= FRAME_START;
@@ -263,20 +275,20 @@ endmodule
 
 
 module spi_master (
-    input  logic       clk,
-    input  logic       reset,
-    input  logic       cpol,     // idle 0: low, 1: high
-    input  logic       cpha,     // first sampling, 0: first edge, 1: second edge
-    input  logic [7:0] clk_div,
-    input  logic [7:0] tx_data,
-    input  logic       start,
+    input logic clk,
+    input logic reset,
+    input logic cpol,  // idle 0: low, 1: high
+    input logic cpha,  // first sampling, 0: first edge, 1: second edge
+    input logic [7:0] clk_div,
+    input logic [7:0] tx_data,
+    input logic start,
     output logic [7:0] rx_data,
-    output logic       done,
-    output logic       busy,
-    output logic       sclk,
-    output logic       mosi,
-    input  logic       miso,
-    output logic       cs_n
+    output logic done,
+    output logic busy,
+    output logic sclk,
+    output logic mosi,
+    input logic miso,
+    output logic cs_n
 );
     typedef enum logic [1:0] {
         IDLE  = 2'b00,

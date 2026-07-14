@@ -44,7 +44,7 @@ module mem_controller (
             end
 
             // 2. VGA 1프레임 출력 완료 시 r_sel 제어 및 SPI 시작
-            if (y_pixel == 240 && x_pixel == 0) begin
+            if (y_pixel == 0 && x_pixel == 0) begin
                 SPI_start    <= 1'b1; 
                 if (fsm_done_reg) begin
                     r_sel_reg    <= r_sel_reg ^ (~SPI_error_reg); // 에러 없을 시 반전

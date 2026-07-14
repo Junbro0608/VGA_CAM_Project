@@ -18,6 +18,9 @@ module UnScaleImage (
     input  logic [                 23:0] mem_rdata5,
 
     // VGA side
+    // output logic cam_flag, //0: mem 1: cam
+    // output logic [23:0] mem_rdata,
+    // output logic [11:0] cam_rdata
     output logic [3:0] port_red,
     output logic [3:0] port_green,
     output logic [3:0] port_blue
@@ -26,7 +29,10 @@ module UnScaleImage (
     logic [23:0] mem_rdata_reg;
     logic        cam_flag;
     logic        border_flag;
-    logic [3:0] Y_data, Co_data, Cg_data, temp_data;
+    logic [3:0] Y_data;
+    logic signed [4:0] Co_data, Cg_data;
+    logic signed [6:0] red_calc, green_calc, blue_calc;
+    logic [3:0] decoded_red, decoded_green, decoded_blue;
 
     // ==========================================
     // 🧮 1. 로컬 좌표계 (Local Coordinates) 계산
@@ -35,15 +41,55 @@ module UnScaleImage (
     logic [9:0] local_x;
     logic [9:0] local_y;
 
-    always_comb begin
-        // Local Y 계산 (위아래 2분할)
-        if (y_pixel >= 120) local_y = y_pixel - 120;
-        else local_y = y_pixel;
+    logic [8:0] scale_x;
+    logic [8:0] scale_y;
 
-        // Local X 계산 (좌/중/우 3분할, 106과 213 구분선 고려)
-        if (x_pixel > 213) local_x = x_pixel - 214;  // 214 ~ 319 -> 0 ~ 105
-        else if (x_pixel > 106) local_x = x_pixel - 107;  // 107 ~ 212 -> 0 ~ 105
-        else local_x = x_pixel;  //   0 ~ 105 -> 0 ~ 105
+    // frameBuffer는 동기식 읽기이므로 다음 VGA 픽셀의 주소를 미리 넣는다.
+    logic [9:0] next_x_pixel;
+    logic [9:0] next_y_pixel;
+    logic       next_de;
+    logic [8:0] read_scale_x;
+    logic [8:0] read_scale_y;
+    logic [9:0] read_local_x;
+    logic [9:0] read_local_y;
+
+    assign scale_x = x_pixel >> 1;
+    assign scale_y = y_pixel >> 1;
+
+    always_comb begin
+        if (x_pixel == 10'd799) begin
+            next_x_pixel = 10'd0;
+            if (y_pixel == 10'd524) next_y_pixel = 10'd0;
+            else next_y_pixel = y_pixel + 1'b1;
+        end else begin
+            next_x_pixel = x_pixel + 1'b1;
+            next_y_pixel = y_pixel;
+        end
+    end
+
+    assign next_de      = (next_x_pixel < 640) && (next_y_pixel < 480);
+    assign read_scale_x = next_x_pixel >> 1;
+    assign read_scale_y = next_y_pixel >> 1;
+
+    always_comb begin
+        // 320×240 논리 화면 기준 로컬 Y
+        if (scale_y >= 120) local_y = scale_y - 120;
+        else local_y = scale_y;
+
+        // 320×240 논리 화면 기준 로컬 X
+        if (scale_x > 213) local_x = scale_x - 214;
+        else if (scale_x > 106) local_x = scale_x - 107;
+        else local_x = scale_x;
+    end
+
+    // 다음 화면 픽셀에 대응하는 메모리 내부 좌표
+    always_comb begin
+        if (read_scale_y >= 120) read_local_y = read_scale_y - 120;
+        else read_local_y = read_scale_y;
+
+        if (read_scale_x > 213) read_local_x = read_scale_x - 214;
+        else if (read_scale_x > 106) read_local_x = read_scale_x - 107;
+        else read_local_x = read_scale_x;
     end
 
     // ==========================================
@@ -56,46 +102,36 @@ module UnScaleImage (
     logic [9:0] mapped_cam_y;
 
     // 로컬 좌표를 원본 320x240 비율로 변환
-    assign mapped_cam_x = (local_x << 1) + local_x;  // local_x * 3
-    assign mapped_cam_y = (local_y << 1);  // local_y * 2
+    assign mapped_cam_x = (read_local_x << 1) + read_local_x;
+    assign mapped_cam_y = (read_local_y << 1);
 
     // 320x240 메모리의 1D 주소 = (Y * 320) + X
-    assign cam_raddr    = de ? ((mapped_cam_y * 320) + mapped_cam_x) : '0;
+    assign cam_raddr    = next_de ? ((mapped_cam_y * 320) + mapped_cam_x) : '0;
 
     // --- 메모리 (2x2 압축 읽기) ---
     // 가로세로 >> 1 하여 주소 계산, 가로폭 53
-    assign mem_raddr    = de ? ((local_y >> 1) * 53 + (local_x >> 1)) : '0;
+    assign mem_raddr    = next_de ? ((read_local_y >> 1) * 53
+                                      + (read_local_x >> 1)) : '0;
 
     // ==========================================
     // 📺 3. 영역별 데이터 멀티플렉싱 (Mux)
     // ==========================================
     always_comb begin
-        mem_rdata_reg = 0;
-        cam_flag      = 0;
-        border_flag   = 0;
+        mem_rdata_reg = 24'd0;
+        cam_flag      = 1'b0;
+        border_flag   = 1'b0;
 
         if (de) begin
-            // 가로선 106과 213은 구분선(검은색) 처리
-            if (x_pixel == 106 || x_pixel == 213) begin
-                border_flag = 1;
-            end else if (y_pixel < 120) begin
-                // --- 윗줄 (Top Row) ---
-                if (x_pixel < 106) begin
-                    mem_rdata_reg = mem_rdata0;  // 0번 영역 (좌상단)
-                end else if (x_pixel < 213) begin
-                    cam_flag = 1;  // 1번 영역 (중상단 - 실시간 카메라)
-                end else begin
-                    mem_rdata_reg = mem_rdata2;  // 2번 영역 (우상단)
-                end
+            if (scale_x == 106 || scale_x == 213) begin
+                border_flag = 1'b1;
+            end else if (scale_y < 120) begin
+                if (scale_x < 106) mem_rdata_reg = mem_rdata0;
+                else if (scale_x < 213) cam_flag = 1'b1;
+                else mem_rdata_reg = mem_rdata2;
             end else begin
-                // --- 아랫줄 (Bottom Row) ---
-                if (x_pixel < 106) begin
-                    mem_rdata_reg = mem_rdata3;  // 3번 영역 (좌하단)
-                end else if (x_pixel < 213) begin
-                    mem_rdata_reg = mem_rdata4;  // 4번 영역 (중하단)
-                end else begin
-                    mem_rdata_reg = mem_rdata5;  // 5번 영역 (우하단)
-                end
+                if (scale_x < 106) mem_rdata_reg = mem_rdata3;
+                else if (scale_x < 213) mem_rdata_reg = mem_rdata4;
+                else mem_rdata_reg = mem_rdata5;
             end
         end
     end
@@ -104,10 +140,9 @@ module UnScaleImage (
     // 🎨 4. 데이터 추출 및 YCoCg 연산 (1:1 스케일)
     // ==========================================
     always_comb begin
-        Cg_data = mem_rdata_reg[23:20];
-        Co_data = mem_rdata_reg[19:16];
+        Cg_data = {mem_rdata_reg[23], mem_rdata_reg[23:20]};
+        Co_data = {mem_rdata_reg[19], mem_rdata_reg[19:16]};
 
-        // 1:1 출력이므로 픽셀 단위로 정확히 가져오기 위해 [0]번 비트 사용
         case ({
             local_y[0], local_x[0]
         })
@@ -117,14 +152,28 @@ module UnScaleImage (
             2'b11: Y_data = mem_rdata_reg[15:12];
         endcase
 
-        temp_data = Y_data - Cg_data;
+        red_calc   = $signed({1'b0, Y_data}) - Cg_data + Co_data;
+        green_calc = $signed({1'b0, Y_data}) + Cg_data;
+        blue_calc  = $signed({1'b0, Y_data}) - Cg_data - Co_data;
+
+        if (red_calc < 0) decoded_red = 4'd0;
+        else if (red_calc > 15) decoded_red = 4'd15;
+        else decoded_red = red_calc[3:0];
+
+        if (green_calc < 0) decoded_green = 4'd0;
+        else if (green_calc > 15) decoded_green = 4'd15;
+        else decoded_green = green_calc[3:0];
+
+        if (blue_calc < 0) decoded_blue = 4'd0;
+        else if (blue_calc > 15) decoded_blue = 4'd15;
+        else decoded_blue = blue_calc[3:0];
     end
 
     // ==========================================
     // 🖥️ 5. 최종 RGB 출력
     // ==========================================
     // border_flag가 1이거나 de가 0일 때는 모두 0(검은색)을 출력합니다.
-    assign port_red   = (!de || border_flag) ? 4'd0 : (cam_flag) ? cam_rdata1[11:8] : (temp_data + Co_data);
-    assign port_green = (!de || border_flag) ? 4'd0 : (cam_flag) ? cam_rdata1[7:4]  : (Y_data + Cg_data);
-    assign port_blue  = (!de || border_flag) ? 4'd0 : (cam_flag) ? cam_rdata1[3:0]  : (temp_data - Co_data);
+    assign port_red   = (!de || border_flag) ? 4'd0 : (cam_flag) ? cam_rdata1[11:8] : decoded_red;
+    assign port_green = (!de || border_flag) ? 4'd0 : (cam_flag) ? cam_rdata1[7:4]  : decoded_green;
+    assign port_blue  = (!de || border_flag) ? 4'd0 : (cam_flag) ? cam_rdata1[3:0]  : decoded_blue;
 endmodule
