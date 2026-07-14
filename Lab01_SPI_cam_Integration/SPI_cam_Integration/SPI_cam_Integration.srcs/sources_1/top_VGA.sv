@@ -23,8 +23,7 @@ module top_master (
     output logic       sclk,
     input  logic       miso,
     output logic       mosi,
-    output logic [4:0] cs_n,
-    output logic [5:0] led
+    output logic [4:0] cs_n
 );
 
     // ==========================================
@@ -62,7 +61,6 @@ module top_master (
     logic [11:0] rData1;
 
 
-    assign led = {fsm_done, SPI_error};
     // 불필요한(Floating) Logic 선언부 싹 정리 완료!
 
 

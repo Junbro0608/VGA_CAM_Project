@@ -75,9 +75,7 @@ module SPI_FSM (
     input  logic decoder_start,
     output logic fsm_done,
 
-    // --- [추가] 통신 상태 보고 포트 ---
-    // 각 비트가 슬레이브의 에러 상태를 나타냄 (1: 에러/통신불가, 0: 정상)
-    // spi_error[0] = SLV0, spi_error[1] = SLV2, ... spi_error[4] = SLV5
+    // --- 통신 상태 보고 포트 ---
     output logic [4:0] spi_error,
 
     // --- spi_master (하위 PHY 모듈) 제어 포트 ---
@@ -96,11 +94,13 @@ module SPI_FSM (
     output logic [23:0] wdata
 );
 
-    // --- FSM 상태 정의 ---
+    // --- FSM 상태 정의 (READ_STATUS, WAIT_STATUS_DONE 추가됨) ---
     typedef enum logic [3:0] {
         FRAME_START,
         SEND_HEADER,
         WAIT_HEADER_DONE,
+        READ_STATUS,       // [추가] 슬레이브 상태 수신 시작
+        WAIT_STATUS_DONE,  // [추가] 슬레이브 상태 수신 대기
         READ_B1,
         WAIT_B1,
         READ_B2,
@@ -126,8 +126,8 @@ module SPI_FSM (
     assign we       = (state == WRITE_MEM);
     assign fsm_done = (state == FRAME_DONE);
 
-    // --- 고속 상태 머신 ---
-    always_ff @(posedge clk or posedge reset) begin
+    // --- 고속 상태 머신 (동기 리셋 적용) ---
+    always_ff @(posedge clk) begin
         if (reset) begin
             state     <= FRAME_START;
             tx_data   <= 8'h00;
@@ -136,7 +136,7 @@ module SPI_FSM (
             slv_idx   <= 0;
             loop_cnt  <= 0;
             data_buf  <= 24'h000000;
-            spi_error <= 5'b00000;  // 리셋 시 에러 레지스터 초기화
+            spi_error <= 5'b00000; 
         end else begin
             case (state)
                 // 1. 트리거 대기 상태
@@ -148,30 +148,43 @@ module SPI_FSM (
                         state    <= SEND_HEADER;
                     end
                 end
+
                 // 2. 헤더 (0xA9) 전송
                 SEND_HEADER: begin
                     if (!busy) begin
                         ss_n    <= ~(5'b00001 << slv_idx);
-                        tx_data <= 8'hA9; // MOSI로 0xA9를 쏘는 동시에
+                        tx_data <= 8'hA9; 
                         start   <= 1'b1;
                         state   <= WAIT_HEADER_DONE;
                     end
                 end
-
-                // 3. 풀 듀플렉스 응답 검사 (가장 핵심적인 변경 구간)
                 WAIT_HEADER_DONE: begin
                     start <= 1'b0;
                     if (done) begin
-                        // rx_data에는 MISO를 통해 슬레이브가 '동시에' 보낸 상태 값이 들어있음
-                        if (rx_data == 8'd18) begin
-                            // [통신 가능] 에러 비트 클리어 후 정상 수신 루프 진입
+                        state <= READ_STATUS; // 헤더 전송만 완료하고 상태 읽기로 넘어감
+                    end
+                end
+
+                // 3. [추가됨] 슬레이브 상태 수신 (통신 가능 여부 판별)
+                READ_STATUS: begin
+                    if (!busy) begin
+                        tx_data <= 8'h00; // SCLK를 만들어내기 위해 더미 데이터(0x00) 전송
+                        start   <= 1'b1;
+                        state   <= WAIT_STATUS_DONE;
+                    end
+                end
+                WAIT_STATUS_DONE: begin
+                    start <= 1'b0;
+                    if (done) begin
+                        // 슬레이브가 다음 통신에서 MISO로 보낸 상태값이 18이면 통신 시작
+                        if (rx_data == 8'd18) begin 
                             spi_error[slv_idx] <= 1'b0;
                             state              <= READ_B1;
                         end else begin
-                            // [통신 불가능 (24 등)] 에러 비트 세팅 후 즉시 중단(Abort)
+                            // 통신 불가능 상태이면 CS 즉시 해제 후 다음 슬레이브로 스킵
                             spi_error[slv_idx] <= 1'b1;
-                            ss_n <= 5'b11111;  // 칩 셀렉트 즉각 해제 (버스 놓아주기)
-                            state              <= NEXT_SLAVE_CHECK; // 3180번 루프를 과감히 스킵하고 다음 슬레이브로!
+                            ss_n               <= 5'b11111; 
+                            state              <= NEXT_SLAVE_CHECK; 
                         end
                     end
                 end
@@ -243,7 +256,7 @@ module SPI_FSM (
                 // 9. 5개 슬레이브 순회
                 NEXT_SLAVE_CHECK: begin
                     if (slv_idx == 4) begin
-                        state <= FRAME_DONE;  // 5장 끝! 완료 상태로 점프
+                        state <= FRAME_DONE;  
                     end else begin
                         slv_idx  <= slv_idx + 1;
                         loop_cnt <= 0;
@@ -253,7 +266,7 @@ module SPI_FSM (
 
                 // 10. 완료 보고 (딱 1클럭 소요)
                 FRAME_DONE: begin
-                    state <= FRAME_START;  // 다음 decoder_start 대기
+                    state <= FRAME_START; 
                 end
 
                 default: state <= FRAME_START;
