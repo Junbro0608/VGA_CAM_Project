@@ -44,17 +44,16 @@ module mem_controller (
             end
 
             // 2. VGA 1프레임 출력 완료 시 r_sel 제어 및 SPI 시작
-            if (y_pixel == 480 && x_pixel == 0) begin
+            if (y_pixel == 240 && x_pixel == 0) begin
+                SPI_start    <= 1'b1; 
                 if (fsm_done_reg) begin
                     r_sel_reg    <= r_sel_reg ^ (~SPI_error_reg); // 에러 없을 시 반전
                     fsm_done_reg <= 1'b0;
                     
                     // 여기서 1을 주면, 이번 클럭에서는 최상단의 <= 0 을 덮어쓰고 1이 됩니다.
-                    SPI_start    <= 1'b1; 
                 end 
                 // 기존에 있던 쓸모없는 else 구문은 삭제했습니다.
             end
         end
     end
-
 endmodule

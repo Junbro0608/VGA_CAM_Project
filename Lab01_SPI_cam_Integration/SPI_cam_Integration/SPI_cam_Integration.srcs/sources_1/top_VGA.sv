@@ -23,7 +23,8 @@ module top_master (
     output logic       sclk,
     input  logic       miso,
     output logic       mosi,
-    output logic [4:0] cs_n
+    output logic [4:0] cs_n,
+    output logic [5:0] led
 );
 
     // ==========================================
@@ -60,6 +61,8 @@ module top_master (
     logic [23:0] rData0, rData2, rData3, rData4, rData5;
     logic [11:0] rData1;
 
+
+    assign led = {fsm_done, SPI_error};
     // 불필요한(Floating) Logic 선언부 싹 정리 완료!
 
 
@@ -74,7 +77,7 @@ module top_master (
     );
 
     OV7670_controller U_OV7670_controller (
-        .clk  (clk),
+        .clk  (pclk),
         .reset(reset),
         .start(1'b1),
         .scl  (scl),
