@@ -26,7 +26,8 @@ module mem_controller (
     always_ff @(posedge clk or posedge reset) begin
         if (reset) begin
             r_sel_reg     <= 5'b00000;
-            w_sel_reg     <= 5'b00000;  
+            // VGA는 A(0)를 읽고 SPI는 B(1)에 써서 처음부터 충돌을 방지한다.
+            w_sel_reg     <= 5'b11111;
             fsm_done_reg  <= 1'b0;
             SPI_error_reg <= 5'b00000;
             SPI_start     <= 1'b0;

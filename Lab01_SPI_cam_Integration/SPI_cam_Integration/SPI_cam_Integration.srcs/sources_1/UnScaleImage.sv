@@ -6,7 +6,7 @@ module UnScaleImage (
     input logic [9:0] y_pixel,
 
     // cam side (1번 위치: Top-Middle)
-    output logic [$clog2(320*240)-1:0] cam_raddr,
+    output logic [$clog2(106*120)-1:0] cam_raddr,
     input  logic [               11:0] cam_rdata1,
 
     // mem side (나머지 5개 위치)
@@ -101,12 +101,12 @@ module UnScaleImage (
     logic [9:0] mapped_cam_x;
     logic [9:0] mapped_cam_y;
 
-    // 로컬 좌표를 원본 320x240 비율로 변환
-    assign mapped_cam_x = (read_local_x << 1) + read_local_x;
-    assign mapped_cam_y = (read_local_y << 1);
+    // 106x120 표시 영역과 106x120 카메라 메모리를 1:1로 매핑한다.
+    assign mapped_cam_x = read_local_x;
+    assign mapped_cam_y = read_local_y;
 
-    // 320x240 메모리의 1D 주소 = (Y * 320) + X
-    assign cam_raddr    = next_de ? ((mapped_cam_y * 320) + mapped_cam_x) : '0;
+    // 106x120 메모리의 1D 주소 = (Y * 106) + X
+    assign cam_raddr    = next_de ? ((mapped_cam_y * 106) + mapped_cam_x) : '0;
 
     // --- 메모리 (2x2 압축 읽기) ---
     // 가로세로 >> 1 하여 주소 계산, 가로폭 53
@@ -140,16 +140,17 @@ module UnScaleImage (
     // 🎨 4. 데이터 추출 및 YCoCg 연산 (1:1 스케일)
     // ==========================================
     always_comb begin
-        Cg_data = {mem_rdata_reg[23], mem_rdata_reg[23:20]};
-        Co_data = {mem_rdata_reg[19], mem_rdata_reg[19:16]};
+        // SPI 수신 워드 배치: {Y3, Y2, Y1, Y0, Co, Cg}
+        Cg_data = $signed({1'b0, mem_rdata_reg[3:0]}) - 5'sd8;
+        Co_data = $signed({1'b0, mem_rdata_reg[7:4]}) - 5'sd8;
 
         case ({
             local_y[0], local_x[0]
         })
-            2'b00: Y_data = mem_rdata_reg[3:0];
-            2'b01: Y_data = mem_rdata_reg[7:4];
-            2'b10: Y_data = mem_rdata_reg[11:8];
-            2'b11: Y_data = mem_rdata_reg[15:12];
+            2'b00: Y_data = mem_rdata_reg[11:8];   // Y0: 좌상단
+            2'b01: Y_data = mem_rdata_reg[15:12];  // Y1: 우상단
+            2'b10: Y_data = mem_rdata_reg[19:16];  // Y2: 좌하단
+            2'b11: Y_data = mem_rdata_reg[23:20];  // Y3: 우하단
         endcase
 
         red_calc   = $signed({1'b0, Y_data}) - Cg_data + Co_data;

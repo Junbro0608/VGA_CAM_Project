@@ -2,5 +2,9 @@
 2020.2
 Nov 18 2020
 09:47:47
-D:/d/VGA_CAM_Project/Lab01_SPI_cam_Integration/SPI_cam_Integration/SPI_cam_Integration.srcs/sources_1/UnScaleImage.sv,1784010493,systemVerilog,,,,UnScaleImage,,,,,,,,
+D:/d/VGA_CAM_Project/Lab01_SPI_cam_Integration/SPI_cam_Integration/SPI_cam_Integration.srcs/sources_1/DownScaleimage.sv,1784012565,systemVerilog,,D:/d/VGA_CAM_Project/Lab01_SPI_cam_Integration/SPI_cam_Integration/SPI_cam_Integration.srcs/sources_1/frameBuffer.sv,,CameraDownScale106x120;DownScaleimage;DownScaleimg,,,,,,,,
+D:/d/VGA_CAM_Project/Lab01_SPI_cam_Integration/SPI_cam_Integration/SPI_cam_Integration.srcs/sources_1/SPI_sender.sv,1784019127,systemVerilog,,D:/d/VGA_CAM_Project/Lab01_SPI_cam_Integration/SPI_cam_Integration/SPI_cam_Integration.srcs/sources_1/frameBuffer.sv,,SPI_FSM;SPI_sender;spi_master,,,,,,,,
+D:/d/VGA_CAM_Project/Lab01_SPI_cam_Integration/SPI_cam_Integration/SPI_cam_Integration.srcs/sources_1/UnScaleImage.sv,1784020725,systemVerilog,,D:/d/VGA_CAM_Project/Lab01_SPI_cam_Integration/SPI_cam_Integration/SPI_cam_Integration.srcs/sources_1/top_VGA.sv,,UnScaleImage,,,,,,,,
+D:/d/VGA_CAM_Project/Lab01_SPI_cam_Integration/SPI_cam_Integration/SPI_cam_Integration.srcs/sources_1/frameBuffer.sv,1784012445,systemVerilog,,D:/d/VGA_CAM_Project/Lab01_SPI_cam_Integration/SPI_cam_Integration/SPI_cam_Integration.srcs/sources_1/top_VGA.sv,,MMU;YCoCgframeBuffer;frameBuffer,,,,,,,,
+D:/d/VGA_CAM_Project/Lab01_SPI_cam_Integration/SPI_cam_Integration/SPI_cam_Integration.srcs/sources_1/mem_controller.sv,1784019355,systemVerilog,,,,mem_controller,,,,,,,,
 D:/d/VGA_CAM_Project/Lab01_SPI_cam_Integration/SPI_cam_Integration/SPI_cam_Integration.srcs/sources_1/top_VGA.sv,1784011950,systemVerilog,,,,top_master,,,,,,,,

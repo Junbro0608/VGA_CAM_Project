@@ -9,14 +9,15 @@ module SPI_sender (
     //SPI side
     output logic        sclk,
     output logic        mosi,
-    input  logic        miso,
+    input  logic [ 4:0] miso,
     output logic [ 4:0] cs_n,
     //write mem side
     output logic [ 4:0] we,
     output logic [11:0] waddr,
-    output logic [23:0] wdata
+    output logic [119:0] wdata
 );
-    logic [7:0] SPI_tx_data, SPI_rx_data;
+    logic [7:0] SPI_tx_data;
+    logic [39:0] SPI_rx_data;
     logic SPI_start, SPI_done, SPI_busy, SPI_cs_n;
     logic [4:0] ss_n;
 
@@ -81,7 +82,7 @@ module SPI_FSM (
     // --- spi_master (하위 PHY 모듈) 제어 포트 ---
     output logic [7:0] tx_data,
     output logic       start,
-    input  logic [7:0] rx_data,
+    input  logic [39:0] rx_data,
     input  logic       done,
     input  logic       busy,
 
@@ -91,7 +92,7 @@ module SPI_FSM (
     // --- Frame Buffer (MMU) 쓰기 포트 ---
     output logic [ 4:0] we,
     output logic [11:0] waddr,
-    output logic [23:0] wdata
+    output logic [119:0] wdata
 );
 
     // --- FSM 상태 정의 (STATUS 확인 상태 제거됨) ---
@@ -99,6 +100,8 @@ module SPI_FSM (
         FRAME_START,
         SEND_HEADER,
         WAIT_HEADER_DONE,
+        READ_STATUS,
+        WAIT_STATUS,
         READ_B1,
         WAIT_B1,
         READ_B2,
@@ -114,25 +117,25 @@ module SPI_FSM (
     state_e state;
 
     // --- 내부 레지스터 ---
-    logic [2:0] slv_idx;
     logic [11:0] loop_cnt;
-    logic [23:0] data_buf;
+    logic [4:0] status_ready;
+    logic [23:0] data_buf0, data_buf1, data_buf2, data_buf3, data_buf4;
 
     // --- 출력 포트 매핑 ---
-    assign wdata    = data_buf;
     assign waddr    = loop_cnt;
     assign fsm_done = (state == FRAME_DONE);
+
     always_comb begin
+        status_ready[0] = (rx_data[ 7: 0] == 8'h18);
+        status_ready[1] = (rx_data[15: 8] == 8'h18);
+        status_ready[2] = (rx_data[23:16] == 8'h18);
+        status_ready[3] = (rx_data[31:24] == 8'h18);
+        status_ready[4] = (rx_data[39:32] == 8'h18);
+
         we = 5'b00000;
+        wdata = {data_buf4, data_buf3, data_buf2, data_buf1, data_buf0};
         if (state == WRITE_MEM) begin
-            case (slv_idx)
-                3'd0: we = 5'b00001;
-                3'd1: we = 5'b00010;
-                3'd2: we = 5'b00100;
-                3'd3: we = 5'b01000;
-                3'd4: we = 5'b10000;
-                default: we = 5'b00000;
-            endcase
+            we = ~spi_error;
         end
     end
 
@@ -143,9 +146,12 @@ module SPI_FSM (
             tx_data   <= 8'h00;
             start     <= 1'b0;
             ss_n      <= 5'b11111;
-            slv_idx   <= 0;
             loop_cnt  <= 0;
-            data_buf  <= 24'h000000;
+            data_buf0 <= 24'd0;
+            data_buf1 <= 24'd0;
+            data_buf2 <= 24'd0;
+            data_buf3 <= 24'd0;
+            data_buf4 <= 24'd0;
             spi_error <= 5'b00000;
         end else begin
             case (state)
@@ -153,7 +159,6 @@ module SPI_FSM (
                 FRAME_START: begin
                     start <= 1'b0;
                     if (decoder_start) begin
-                        slv_idx  <= 0;
                         loop_cnt <= 0;
                         state    <= SEND_HEADER;
                     end
@@ -162,32 +167,45 @@ module SPI_FSM (
                 // 2. 헤더 (0xA9) 전송
                 SEND_HEADER: begin
                     if (!busy) begin
-                        ss_n    <= ~(5'b00001 << slv_idx);
+                        ss_n    <= 5'b00000;
                         tx_data <= 8'hA9;
                         start   <= 1'b1;
                         state   <= WAIT_HEADER_DONE;
                     end
                 end
 
-                // 3. 풀 듀플렉스 응답 검사 (구버전 롤백 구간)
+                // 3. 헤더 전송 완료 대기
                 WAIT_HEADER_DONE: begin
                     start <= 1'b0;
                     if (done) begin
-                        // rx_data에는 MISO를 통해 슬레이브가 '동시에' 보낸 상태 값이 들어있음
-                        if (rx_data == 8'd18) begin
-                            // [통신 가능] 에러 비트 클리어 후 정상 수신 루프 진입
-                            spi_error[slv_idx] <= 1'b0;
+                        // 헤더와 동시에 들어온 값은 사용하지 않고 다음 바이트에서 상태를 읽는다.
+                        state <= READ_STATUS;
+                    end
+                end
+
+                // 4. 별도 상태 바이트 수신
+                READ_STATUS: begin
+                    if (!busy) begin
+                        tx_data <= 8'h00;
+                        start   <= 1'b1;
+                        state   <= WAIT_STATUS;
+                    end
+                end
+
+                WAIT_STATUS: begin
+                    start <= 1'b0;
+                    if (done) begin
+                        spi_error <= ~status_ready;
+                        if (status_ready != 5'b00000) begin
                             state              <= READ_B1;
                         end else begin
-                            // [통신 불가능] 에러 비트 세팅 후 즉시 중단 및 다음 슬레이브 스킵
-                            spi_error[slv_idx] <= 1'b1;
                             ss_n               <= 5'b11111;
-                            state              <= NEXT_SLAVE_CHECK;
+                            state              <= FRAME_DONE;
                         end
                     end
                 end
 
-                // 4. 바이트 1 수신
+                // 5. 바이트 1 수신
                 READ_B1: begin
                     if (!busy) begin
                         tx_data <= 8'h00;
@@ -198,12 +216,16 @@ module SPI_FSM (
                 WAIT_B1: begin
                     start <= 1'b0;
                     if (done) begin
-                        data_buf[23:16] <= rx_data;
+                        data_buf0[23:16] <= rx_data[ 7: 0];
+                        data_buf1[23:16] <= rx_data[15: 8];
+                        data_buf2[23:16] <= rx_data[23:16];
+                        data_buf3[23:16] <= rx_data[31:24];
+                        data_buf4[23:16] <= rx_data[39:32];
                         state           <= READ_B2;
                     end
                 end
 
-                // 5. 바이트 2 수신
+                // 6. 바이트 2 수신
                 READ_B2: begin
                     if (!busy) begin
                         tx_data <= 8'h00;
@@ -214,12 +236,16 @@ module SPI_FSM (
                 WAIT_B2: begin
                     start <= 1'b0;
                     if (done) begin
-                        data_buf[15:8] <= rx_data;
+                        data_buf0[15:8] <= rx_data[ 7: 0];
+                        data_buf1[15:8] <= rx_data[15: 8];
+                        data_buf2[15:8] <= rx_data[23:16];
+                        data_buf3[15:8] <= rx_data[31:24];
+                        data_buf4[15:8] <= rx_data[39:32];
                         state          <= READ_B3;
                     end
                 end
 
-                // 6. 바이트 3 수신
+                // 7. 바이트 3 수신
                 READ_B3: begin
                     if (!busy) begin
                         tx_data <= 8'h00;
@@ -230,39 +256,32 @@ module SPI_FSM (
                 WAIT_B3: begin
                     start <= 1'b0;
                     if (done) begin
-                        data_buf[7:0] <= rx_data;
-                        state         <= WRITE_MEM;
+                        data_buf0[7:0] <= rx_data[ 7: 0];
+                        data_buf1[7:0] <= rx_data[15: 8];
+                        data_buf2[7:0] <= rx_data[23:16];
+                        data_buf3[7:0] <= rx_data[31:24];
+                        data_buf4[7:0] <= rx_data[39:32];
+                        state           <= WRITE_MEM;
                     end
                 end
 
-                // 7. 메모리 쓰기 펄스
+                // 8. 메모리 쓰기 펄스
                 WRITE_MEM: begin
                     state <= CHECK_LOOP;
                 end
 
-                // 8. 3180루프 검사
+                // 9. 3180루프 검사
                 CHECK_LOOP: begin
                     if (loop_cnt == 12'd3179) begin
                         ss_n  <= 5'b11111;
-                        state <= NEXT_SLAVE_CHECK;
+                        state <= FRAME_DONE;
                     end else begin
                         loop_cnt <= loop_cnt + 1;
                         state    <= READ_B1;
                     end
                 end
 
-                // 9. 5개 슬레이브 순회
-                NEXT_SLAVE_CHECK: begin
-                    if (slv_idx == 4) begin
-                        state <= FRAME_DONE;
-                    end else begin
-                        slv_idx  <= slv_idx + 1;
-                        loop_cnt <= 0;
-                        state    <= SEND_HEADER;
-                    end
-                end
-
-                // 10. 완료 보고
+                // 11. 완료 보고
                 FRAME_DONE: begin
                     state <= FRAME_START;
                 end
@@ -282,12 +301,12 @@ module spi_master (
     input logic [7:0] clk_div,
     input logic [7:0] tx_data,
     input logic start,
-    output logic [7:0] rx_data,
+    output logic [39:0] rx_data,
     output logic done,
     output logic busy,
     output logic sclk,
     output logic mosi,
-    input logic miso,
+    input logic [4:0] miso,
     output logic cs_n
 );
     typedef enum logic [1:0] {
@@ -300,7 +319,9 @@ module spi_master (
     spi_state_e state;
     logic [7:0] div_cnt;
     logic half_tick;
-    logic [7:0] tx_shift_reg, rx_shift_reg;
+    logic [7:0] tx_shift_reg;
+    logic [7:0] rx_shift_reg0, rx_shift_reg1, rx_shift_reg2,
+                rx_shift_reg3, rx_shift_reg4;
     logic [2:0] bit_cnt;
     logic step, sclk_r;
 
@@ -319,6 +340,9 @@ module spi_master (
                     div_cnt   <= div_cnt + 1;
                     half_tick <= 1'b0;
                 end
+            end else begin
+                div_cnt   <= 0;
+                half_tick <= 1'b0;
             end
         end
     end
@@ -331,7 +355,11 @@ module spi_master (
             busy <= 1'b0;
             done <= 1'b0;
             tx_shift_reg <= 0;
-            rx_shift_reg <= 0;
+            rx_shift_reg0 <= 0;
+            rx_shift_reg1 <= 0;
+            rx_shift_reg2 <= 0;
+            rx_shift_reg3 <= 0;
+            rx_shift_reg4 <= 0;
             bit_cnt <= 0;
             step <= 1'b0;
             rx_data <= 0;
@@ -365,7 +393,11 @@ module spi_master (
                         if (step == 0) begin
                             step <= 1'b1;
                             if (!cpha) begin
-                                rx_shift_reg <= {rx_shift_reg[6:0], miso};
+                                rx_shift_reg0 <= {rx_shift_reg0[6:0], miso[0]};
+                                rx_shift_reg1 <= {rx_shift_reg1[6:0], miso[1]};
+                                rx_shift_reg2 <= {rx_shift_reg2[6:0], miso[2]};
+                                rx_shift_reg3 <= {rx_shift_reg3[6:0], miso[3]};
+                                rx_shift_reg4 <= {rx_shift_reg4[6:0], miso[4]};
                             end else begin
                                 mosi <= tx_shift_reg[7];
                                 tx_shift_reg <= {tx_shift_reg[6:0], 1'b0};
@@ -378,15 +410,27 @@ module spi_master (
                                     tx_shift_reg <= {tx_shift_reg[6:0], 1'b0};
                                 end
                             end else begin
-                                rx_shift_reg <= {rx_shift_reg[6:0], miso};
+                                rx_shift_reg0 <= {rx_shift_reg0[6:0], miso[0]};
+                                rx_shift_reg1 <= {rx_shift_reg1[6:0], miso[1]};
+                                rx_shift_reg2 <= {rx_shift_reg2[6:0], miso[2]};
+                                rx_shift_reg3 <= {rx_shift_reg3[6:0], miso[3]};
+                                rx_shift_reg4 <= {rx_shift_reg4[6:0], miso[4]};
                             end
 
                             if (bit_cnt == 7) begin
                                 state <= STOP;
                                 if (!cpha) begin
-                                    rx_data <= rx_shift_reg;
+                                    rx_data <= {rx_shift_reg4, rx_shift_reg3,
+                                                rx_shift_reg2, rx_shift_reg1,
+                                                rx_shift_reg0};
                                 end else begin
-                                    rx_data <= {rx_shift_reg[6:0], miso};
+                                    rx_data <= {
+                                        rx_shift_reg4[6:0], miso[4],
+                                        rx_shift_reg3[6:0], miso[3],
+                                        rx_shift_reg2[6:0], miso[2],
+                                        rx_shift_reg1[6:0], miso[1],
+                                        rx_shift_reg0[6:0], miso[0]
+                                    };
                                 end
                             end else begin
                                 bit_cnt <= bit_cnt + 1;

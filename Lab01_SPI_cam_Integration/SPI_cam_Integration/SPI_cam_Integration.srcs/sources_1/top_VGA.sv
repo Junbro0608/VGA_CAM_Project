@@ -21,7 +21,7 @@ module top_master (
     output logic [3:0] port_blue,
     // spi side
     output logic       sclk,
-    input  logic       miso,
+    input  logic [4:0] miso,
     output logic       mosi,
     output logic [4:0] cs_n
 );
@@ -38,8 +38,11 @@ module top_master (
     logic                         de;
 
     // OV7670 -> MMU 쓰기 신호
+    logic                         cam_raw_we;
+    logic [  $clog2(320*240)-1:0] cam_raw_wAddr;
+    logic [                 15:0] cam_raw_wData;
     logic                         we;
-    logic [  $clog2(320*240)-1:0] wAddr;
+    logic [  $clog2(106*120)-1:0] wAddr;
     logic [                 15:0] wData;
 
     // SPI 관련 신호
@@ -48,13 +51,13 @@ module top_master (
     logic [                  4:0] SPI_error;
     logic [                  4:0] SPI_we;
     logic [$clog2(106*120/4)-1:0] SPI_waddr;
-    logic [                 23:0] SPI_wdata;
+    logic [                119:0] SPI_wdata;
 
     // MMU 제어 및 데이터 신호
     logic [4:0] r_sel, w_sel;
 
     // 주소 및 데이터 분리 신호
-    logic [  $clog2(320*240)-1:0] cam_rAddr;
+    logic [  $clog2(106*120)-1:0] cam_rAddr;
     logic [$clog2(106*120/4)-1:0] mem_rAddr;
 
     logic [23:0] rData0, rData2, rData3, rData4, rData5;
@@ -68,9 +71,9 @@ module top_master (
         .probe0(SPI_error[0]),  // input wire [0:0]  probe0  
         .probe1(SPI_we[0]),  // input wire [0:0]  probe1 
         .probe2(SPI_waddr),  // input wire [11:0]  probe2 
-        .probe3(SPI_wdata),  // input wire [22:0]  probe3 
+        .probe3(SPI_wdata[23:0]),  // slave 0 data
         .probe4(cs_n[0]),  // input wire [0:0]  probe4 
-        .probe5(miso)   // input wire [0:0]  probe5
+        .probe5(miso[0])   // input wire [0:0]  probe5
     );
     // ==========================================
     // 🧱 하위 모듈 인스턴스화
@@ -107,9 +110,20 @@ module top_master (
         .href (href),
         .vsync(vsync),
         .pdata(pdata),
-        .we   (we),
-        .wAddr(wAddr),
-        .wData(wData)
+        .we   (cam_raw_we),
+        .wAddr(cam_raw_wAddr),
+        .wData(cam_raw_wData)
+    );
+
+    CameraDownScale106x120 U_CameraDownScale106x120 (
+        .pclk   (pclk),
+        .reset  (reset),
+        .vsync  (vsync),
+        .i_we   (cam_raw_we),
+        .i_wData(cam_raw_wData),
+        .o_we   (we),
+        .o_wAddr(wAddr),
+        .o_wData(wData)
     );
 
     SPI_sender U_SPI_sender (
