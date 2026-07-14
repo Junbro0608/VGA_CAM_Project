@@ -94,13 +94,11 @@ module SPI_FSM (
     output logic [23:0] wdata
 );
 
-    // --- FSM 상태 정의 (READ_STATUS, WAIT_STATUS_DONE 추가됨) ---
+    // --- FSM 상태 정의 (STATUS 확인 상태 제거됨) ---
     typedef enum logic [3:0] {
         FRAME_START,
         SEND_HEADER,
         WAIT_HEADER_DONE,
-        READ_STATUS,       // [추가] 슬레이브 상태 수신 시작
-        WAIT_STATUS_DONE,  // [추가] 슬레이브 상태 수신 대기
         READ_B1,
         WAIT_B1,
         READ_B2,
@@ -126,7 +124,7 @@ module SPI_FSM (
     assign we       = (state == WRITE_MEM);
     assign fsm_done = (state == FRAME_DONE);
 
-    // --- 고속 상태 머신 (동기 리셋 적용) ---
+    // --- 고속 상태 머신 (동기 리셋 유지) ---
     always_ff @(posedge clk) begin
         if (reset) begin
             state     <= FRAME_START;
@@ -158,30 +156,18 @@ module SPI_FSM (
                         state   <= WAIT_HEADER_DONE;
                     end
                 end
+
+                // 3. 풀 듀플렉스 응답 검사 (구버전 롤백 구간)
                 WAIT_HEADER_DONE: begin
                     start <= 1'b0;
                     if (done) begin
-                        state <= READ_STATUS; // 헤더 전송만 완료하고 상태 읽기로 넘어감
-                    end
-                end
-
-                // 3. [추가됨] 슬레이브 상태 수신 (통신 가능 여부 판별)
-                READ_STATUS: begin
-                    if (!busy) begin
-                        tx_data <= 8'h00; // SCLK를 만들어내기 위해 더미 데이터(0x00) 전송
-                        start   <= 1'b1;
-                        state   <= WAIT_STATUS_DONE;
-                    end
-                end
-                WAIT_STATUS_DONE: begin
-                    start <= 1'b0;
-                    if (done) begin
-                        // 슬레이브가 다음 통신에서 MISO로 보낸 상태값이 18이면 통신 시작
-                        if (rx_data == 8'd18) begin 
+                        // rx_data에는 MISO를 통해 슬레이브가 '동시에' 보낸 상태 값이 들어있음
+                        if (rx_data == 8'd18) begin
+                            // [통신 가능] 에러 비트 클리어 후 정상 수신 루프 진입
                             spi_error[slv_idx] <= 1'b0;
                             state              <= READ_B1;
                         end else begin
-                            // 통신 불가능 상태이면 CS 즉시 해제 후 다음 슬레이브로 스킵
+                            // [통신 불가능] 에러 비트 세팅 후 즉시 중단 및 다음 슬레이브 스킵
                             spi_error[slv_idx] <= 1'b1;
                             ss_n               <= 5'b11111; 
                             state              <= NEXT_SLAVE_CHECK; 
@@ -264,7 +250,7 @@ module SPI_FSM (
                     end
                 end
 
-                // 10. 완료 보고 (딱 1클럭 소요)
+                // 10. 완료 보고
                 FRAME_DONE: begin
                     state <= FRAME_START; 
                 end
@@ -274,7 +260,6 @@ module SPI_FSM (
         end
     end
 endmodule
-
 
 
 module spi_master (

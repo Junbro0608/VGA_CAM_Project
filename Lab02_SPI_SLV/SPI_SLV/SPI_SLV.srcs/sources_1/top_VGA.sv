@@ -14,9 +14,9 @@ module top_VGA (
     inout  wire        sda,
 
     // vga 
-    // output logic [3:0] port_red,
-    // output logic [3:0] port_green,
-    // output logic [3:0] port_blue,
+    output logic [3:0] port_red,
+    output logic [3:0] port_green,
+    output logic [3:0] port_blue,
     output logic h_sync,
     output logic v_sync,
 
