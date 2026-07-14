@@ -11,7 +11,7 @@ module MMU (
     input  logic [                  4:0] w_sel,
     input  logic                         we,
     input  logic [$clog2(106*120/4)-1:0] wAddr,
-    input  logic [                 11:0] wData,
+    input  logic [                 23:0] wData,
     //Mem read side
     input  logic                         rclk,
     input  logic [                  4:0] r_sel,

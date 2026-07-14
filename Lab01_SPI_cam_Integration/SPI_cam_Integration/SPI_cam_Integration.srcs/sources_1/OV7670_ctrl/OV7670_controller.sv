@@ -83,8 +83,8 @@ module init_ROM (
 endmodule
 
 module RW_ADDR_ROM (
-    input  [$clog2(9)-1:0] raddr,
-    output [          8:0] rdata
+    input  [$clog2(10)-1:0] raddr,
+    output [          7:0] rdata
 );
 
     logic [7:0] mem[0:8];

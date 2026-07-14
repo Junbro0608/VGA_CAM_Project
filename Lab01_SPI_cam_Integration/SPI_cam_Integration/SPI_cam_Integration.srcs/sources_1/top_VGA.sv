@@ -47,8 +47,8 @@ module top_master (
     logic                         fsm_done;
     logic [                  4:0] SPI_error;
     logic                         SPI_we;
-    logic [$clog2(106*120*5)-1:0] SPI_waddr;
-    logic [                 11:0] SPI_wdata;
+    logic [$clog2(106*120/4)-1:0] SPI_waddr;
+    logic [                 23:0] SPI_wdata;
 
     // MMU 제어 및 데이터 신호
     logic [4:0] r_sel, w_sel;
@@ -57,7 +57,7 @@ module top_master (
     logic [  $clog2(320*240)-1:0] cam_rAddr;
     logic [$clog2(106*120/4)-1:0] mem_rAddr;
 
-    logic [24:0] rData0, rData2, rData3, rData4, rData5;
+    logic [23:0] rData0, rData2, rData3, rData4, rData5;
     logic [11:0] rData1;
 
     // 불필요한(Floating) Logic 선언부 싹 정리 완료!
@@ -151,16 +151,6 @@ module top_master (
         .rData4   (rData4),
         .rData5   (rData5)
     );
-    DownScaleimage U_DownScaleimage(
-    .de(),
-    .x_pixel(),
-    .y_pixel(),
-    .addr(),
-    .imgPxlData(),
-    .port_red(),
-    .port_green(),
-    .port_blue()
-);
 
     UnScaleImage U_UnScaleImage (
         .de        (de),

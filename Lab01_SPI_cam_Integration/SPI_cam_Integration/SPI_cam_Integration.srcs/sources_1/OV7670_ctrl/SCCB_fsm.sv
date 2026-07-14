@@ -6,10 +6,10 @@ module SCCB_fsm (
     // user control
     input  logic        start_btn,
     // OV7670_INIT_ROM interface
-    output logic [ 7:0] init_addr,
+    output logic [ $clog2(57)-1:0] init_addr,
     input  logic [15:0] init_rdata,
     // AUTO_SETTING_ADDR_MEM interface
-    output logic [ 7:0] set_addr,
+    output logic [$clog2(10)-1:0] set_addr,
     input  logic [ 7:0] set_data,
     // SCCB interface
     input  logic        ready,
