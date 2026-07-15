@@ -49,9 +49,10 @@ def convert_to_mem(input_image_path, output_mem_path):
                 co = int(np.clip(np.round((avg_r - avg_b) / 2.0), -8, 7))
                 cg = int(np.clip(np.round((-avg_r + 2*avg_g - avg_b) / 4.0), -8, 7))
 
-                # 음수를 Verilog가 이해할 수 있는 4비트 2의 보수(2's complement) 형태로 변환
-                co_4bit = co & 0x0F
-                cg_4bit = cg & 0x0F
+                # UnScaleImage는 unsigned 4비트 값에서 8을 빼서 signed 색차를 복원한다.
+                # 따라서 -8~7 값을 offset-binary 0~15로 저장한다.
+                co_4bit = co + 8
+                cg_4bit = cg + 8
 
                 # 4. 24비트 데이터 조립 (비트 시프트 연산)
                 # UnScaleImage 모듈의 데이터 순서: [Cg, Co, Y_br, Y_bl, Y_tr, Y_tl]

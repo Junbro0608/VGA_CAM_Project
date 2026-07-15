@@ -1,10 +1,10 @@
 -- Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
 -- --------------------------------------------------------------------------------
 -- Tool Version: Vivado v.2020.2 (win64) Build 3064766 Wed Nov 18 09:12:45 MST 2020
--- Date        : Tue Jul 14 15:55:47 2026
+-- Date        : Wed Jul 15 14:29:29 2026
 -- Host        : DESKTOP-7CFQ9ND running 64-bit major release  (build 9200)
 -- Command     : write_vhdl -force -mode synth_stub
---               d:/d/VGA_CAM_Project/Lab01_SPI_cam_Integration/SPI_cam_Integration/SPI_cam_Integration.gen/sources_1/ip/ila_0/ila_0_stub.vhdl
+--               d:/aa/VGA_CAM_Project/Lab01_SPI_cam_Integration/SPI_cam_Integration/SPI_cam_Integration.gen/sources_1/ip/ila_0/ila_0_stub.vhdl
 -- Design      : ila_0
 -- Purpose     : Stub declaration of top-level module interface
 -- Device      : xc7a35tcpg236-1

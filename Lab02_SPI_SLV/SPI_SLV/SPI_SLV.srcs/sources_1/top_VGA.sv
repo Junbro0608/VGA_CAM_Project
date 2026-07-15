@@ -168,18 +168,22 @@ module top_VGA (
         .frame_ready(frame_ready)
     );
 
-    ycocg_frame_sender U_YCOCG_frame_sender (
-        .clk      (clk_100),
-        .reset    (reset),
-        .start    (send_start),
-        .busy     (sender_busy),
-        .done     (sender_done),
-        .rAddr    (cam_raddr),
-        .rData    (cam_rdata),
-        .push     (push),
-        .push_data(push_data),
-        .full     (full)
-    );
+    ycocg_encoder U_ycocg_encoder(
+    .clk(clk_100),
+    .reset(reset),
+    .start(),
+    // Frame Buffer (BRAM) 읽기 포트
+    .raddr0(),     // $clog2(106*120) = 14비트
+    .raddr1(),
+    .raddr2(),
+    .raddr3(),
+    .rdata0(),     // {R[3:0], G[3:0], B[3:0]}
+    .rdata1(),
+    .rdata2(),
+    .rdata3(),
+    // 디코더 완벽 호환: ycocg_data = {Y3(4), Y2(4), Y1(4), Y0(4), Co(4), Cg(4)}
+    .ycocg_data()
+);
 
     SPI_Slave U_SPI_Slave (
         .clk        (clk_100),

@@ -23,7 +23,8 @@ module top_master (
     output logic       sclk,
     input  logic [4:0] miso,
     output logic       mosi,
-    output logic [4:0] cs_n
+    output logic [4:0] cs_n,
+    output logic       LED_xy00
 );
 
     // ==========================================
@@ -62,6 +63,15 @@ module top_master (
 
     logic [23:0] rData0, rData2, rData3, rData4, rData5;
     logic [11:0] rData1;
+    logic [ 7:0] slv0_rx_data;
+
+    always_ff @(posedge clk_100M or posedge reset) begin
+        if (reset) begin
+            LED_xy00 <= 0;
+        end else if(x_pixel == 0 && LED_xy00 == 0) begin
+            LED_xy00 <= ~LED_xy00;
+        end
+    end
 
 
     // 불필요한(Floating) Logic 선언부 싹 정리 완료!
@@ -71,9 +81,9 @@ module top_master (
         .probe0(SPI_error[0]),  // input wire [0:0]  probe0  
         .probe1(SPI_we[0]),  // input wire [0:0]  probe1 
         .probe2(SPI_waddr),  // input wire [11:0]  probe2 
-        .probe3(SPI_wdata[23:0]),  // slave 0 data
+        .probe3({16'b0, slv0_rx_data[7:0]}),  // slave 0 data
         .probe4(cs_n[0]),  // input wire [0:0]  probe4 
-        .probe5(miso[0])   // input wire [0:0]  probe5
+        .probe5(miso[0])  // input wire [0:0]  probe5
     );
     // ==========================================
     // 🧱 하위 모듈 인스턴스화
@@ -138,7 +148,8 @@ module top_master (
         .cs_n         (cs_n),
         .we           (SPI_we),
         .waddr        (SPI_waddr),
-        .wdata        (SPI_wdata)
+        .wdata        (SPI_wdata),
+        .slv0_rx_data (slv0_rx_data)
     );
 
     mem_controller U_mem_controller (
@@ -146,6 +157,7 @@ module top_master (
         .reset       (reset),
         .x_pixel     (x_pixel),
         .y_pixel     (y_pixel),
+        .de          (de),
         .SPI_start   (decoder_start),
         .SPI_error   (SPI_error),
         .SPI_fsm_done(fsm_done),
